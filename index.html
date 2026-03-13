@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,6 @@
   <style>
     :root{
       --bg:#07101f;
-      --bg2:#0b1730;
       --panel:#0d1626;
       --panel2:#101d33;
       --line:#21395f;
@@ -33,19 +32,19 @@
 
     body{padding:28px}
 
-    .wrap{max-width:1100px;margin:0 auto}
+    .wrap{max-width:1180px;margin:0 auto}
 
     h1{
-      font-size:58px;
+      font-size:56px;
       line-height:1;
       margin:0 0 10px;
       font-weight:800;
-      letter-spacing:-1.5px
+      letter-spacing:-1.4px
     }
 
     .subtitle{
       color:var(--muted);
-      max-width:900px;
+      max-width:980px;
       font-size:17px;
       line-height:1.5;
       margin-bottom:28px
@@ -79,12 +78,12 @@
     .tab{display:none}
     .tab.active{display:block}
 
-    .hero-grid,.grid-2,.grid-3{
+    .grid-2,.grid-3,.hero-grid{
       display:grid;
       gap:16px
     }
 
-    .hero-grid{grid-template-columns:1.45fr .95fr}
+    .hero-grid{grid-template-columns:1.4fr .95fr}
     .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
     .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 
@@ -93,14 +92,26 @@
       border:1px solid var(--line);
       border-radius:22px;
       padding:18px 18px 16px;
-      box-shadow:var(--glow)
+      box-shadow:var(--glow);
     }
 
     .card h2,.card h3{margin:0 0 10px}
     .card h2{font-size:22px}
     .card h3{font-size:18px}
 
+    .section-title{
+      margin:0 0 14px;
+      font-size:30px
+    }
+
     .muted{color:var(--muted)}
+    .small{font-size:14px;color:var(--muted)}
+
+    .quote{
+      font-size:18px;
+      line-height:1.55;
+      color:#dce9ff
+    }
 
     .pill-wrap{
       display:flex;
@@ -120,7 +131,7 @@
 
     .stat-line{
       display:grid;
-      grid-template-columns:200px 1fr;
+      grid-template-columns:210px 1fr;
       gap:14px;
       padding:11px 0;
       border-top:1px solid rgba(36,57,95,.65)
@@ -136,18 +147,10 @@
       color:#fff
     }
 
-    .section-title{
-      margin:0 0 14px;
-      font-size:30px
-    }
+    ul{margin:8px 0 0 18px;padding:0}
+    li{margin:6px 0;line-height:1.45}
 
     .gift{height:100%}
-
-    .gift p{
-      margin:.45rem 0 0;
-      color:var(--muted);
-      line-height:1.5
-    }
 
     .gift .lvl{
       display:inline-block;
@@ -160,34 +163,10 @@
       margin-bottom:8px
     }
 
-    .ancestry-controls{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin:0 0 16px
-    }
-
-    .ancestry-btn{
-      background:#132641;
-      border:1px solid #2b4e82;
-      color:var(--text);
-      padding:10px 14px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:700
-    }
-
-    .ancestry-btn.active{
-      background:linear-gradient(180deg,#6ec1ff,#499ef8);
-      color:#07101f;
-      border-color:transparent
-    }
-
-    .ancestry-box{
-      padding:15px;
-      border-radius:18px;
-      background:#0b1424;
-      border:1px solid #223a60
+    .gift p{
+      margin:.45rem 0 0;
+      color:var(--muted);
+      line-height:1.5
     }
 
     .timeline{
@@ -214,29 +193,87 @@
       padding-top:4px
     }
 
-    ul{margin:8px 0 0 18px;padding:0}
-    li{margin:6px 0;line-height:1.45}
-
-    .quote{
-      font-size:18px;
-      line-height:1.55;
-      color:#dce9ff
+    .controls,.subcontrols{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:0 0 16px;
     }
 
-    .small{
-      font-size:14px;
-      color:var(--muted)
+    .subcontrols{gap:8px}
+
+    .ctrl-btn,.sub-btn,.hybrid-btn{
+      background:#132641;
+      border:1px solid #2b4e82;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
     }
 
-    .footer-note{
-      margin-top:18px;
+    .ctrl-btn.active,.sub-btn.active,.hybrid-btn.active{
+      background:linear-gradient(180deg,#6ec1ff,#499ef8);
+      color:#07101f;
+      border-color:transparent;
+    }
+
+    .info-box{
+      padding:15px;
+      border-radius:18px;
+      background:#0b1424;
+      border:1px solid #223a60;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:8px;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid #2a416a;
+      background:#0b1424;
+    }
+
+    th,td{
+      padding:12px 12px;
+      border:1px solid #243b60;
+      vertical-align:top;
+      text-align:left;
+    }
+
+    th{
+      background:#17263e;
+      font-weight:800;
+    }
+
+    .hybrid-layout{
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:16px;
+    }
+
+    .hybrid-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .divider{
+      height:1px;
+      background:#223a60;
+      margin:14px 0;
+    }
+
+    .note{
+      margin-top:14px;
       color:var(--muted);
-      font-size:14px
+      font-size:14px;
+      line-height:1.5;
     }
 
-    @media (max-width: 900px){
+    @media (max-width: 980px){
       h1{font-size:42px}
-      .hero-grid,.grid-2,.grid-3{grid-template-columns:1fr}
+      .hero-grid,.grid-2,.grid-3,.hybrid-layout{grid-template-columns:1fr}
       .stat-line,.step{grid-template-columns:1fr}
       .level{text-align:left}
     }
@@ -246,15 +283,15 @@
   <div class="wrap">
     <h1>Dragon Blooded</h1>
     <div class="subtitle">
-      A homebrew dragon lineage built for a spellcaster-heavy playstyle. This version keeps the strong draconic flavor,
-      pushes naturally toward Sorcerer, and spreads the power spikes across levels instead of frontloading everything at level 1.
+      Überarbeitete Homebrew-Lineage mit Spellcaster-Fokus. Diese Version ersetzt klassische Farb-Ancestries durch euer Main- und Sub-Element-System
+      und bindet zusätzlich eure Hybrid-Dragons direkt in dieselbe Seite ein.
     </div>
 
     <div class="tabs">
       <button class="tab-btn" data-tab="overview">Overview</button>
       <button class="tab-btn inactive" data-tab="traits">Traits</button>
       <button class="tab-btn inactive" data-tab="gifts">Draconic Gifts</button>
-      <button class="tab-btn inactive" data-tab="ancestry">Ancestries</button>
+      <button class="tab-btn inactive" data-tab="elements">Elements & Hybrids</button>
       <button class="tab-btn inactive" data-tab="progression">Level Progression</button>
     </div>
 
@@ -263,35 +300,35 @@
         <div class="card">
           <h2>Lineage Concept</h2>
           <p class="quote">
-            Dragon Blooded are not just descendants of dragons. Their blood actively stores draconic arcana, awakening through
-            breath, elemental resistance, magical instinct, spectral wings, and finally a permanent battle-form transformation.
+            Dragon Blooded sind keine normalen Dragonborn. Ihr Blut speichert drakonische Arkana, die sich durch Breath Weapon,
+            Element-Resistenz, Sorcerer-artige Magie, temporäre Flügel und später eine echte drakonische Form entfalten.
           </p>
 
           <div class="pill-wrap">
             <span class="pill">Caster-Oriented</span>
             <span class="pill">Sorcerer Synergy</span>
-            <span class="pill">Breath Weapon at Level 1</span>
-            <span class="pill">Flight Access</span>
+            <span class="pill">Main & Sub Elements</span>
+            <span class="pill">Hybrid Dragons</span>
             <span class="pill">True Dragon Form at Level 8</span>
           </div>
 
           <div class="grid-2">
-            <div class="ancestry-box">
-              <h3>Recommended Build</h3>
+            <div class="info-box">
+              <h3>Empfohlener Build</h3>
               <ul>
                 <li><strong>Class:</strong> Sorcerer</li>
                 <li><strong>Stats:</strong> +2 Charisma, +2 Constitution</li>
-                <li><strong>Best early Gift:</strong> Scaled Focus</li>
-                <li><strong>Best later Gift:</strong> Wing Burst or Elemental Surge</li>
+                <li><strong>Element-Fokus:</strong> Wähle das Element, zu dem deine Damage-Spells passen</li>
+                <li><strong>Starke Gifts:</strong> Scaled Focus, Wing Burst, Elemental Surge</li>
               </ul>
             </div>
 
-            <div class="ancestry-box">
-              <h3>Balance Direction</h3>
+            <div class="info-box">
+              <h3>Was hier geändert wurde</h3>
               <ul>
-                <li>No overloaded level 1 package beyond what matters.</li>
-                <li>Flight is controlled before the full transformation.</li>
-                <li>True Dragon Form is strong, but still not a monster stat block.</li>
+                <li>Normale Farb-Ancestries wurden entfernt.</li>
+                <li>Stattdessen nutzt die Rasse Main- und Sub-Elemente aus eurem Drachensystem.</li>
+                <li>Hybride sind als separate Drachenformen mit Rollen und Beschreibungen eingebaut.</li>
               </ul>
             </div>
           </div>
@@ -317,7 +354,7 @@
 
           <div class="stat-line">
             <div class="stat-name">Core Features</div>
-            <div>Draconic Ancestry, Resistance, Breath Weapon, Arcane Bloodline</div>
+            <div>Elemental Ancestry, Resistance, Breath Weapon, Arcane Bloodline</div>
           </div>
 
           <div class="stat-line">
@@ -327,7 +364,7 @@
 
           <div class="stat-line">
             <div class="stat-name">Main Hook</div>
-            <div>Spellcaster dragon race that ramps up into a permanent true-form transformation</div>
+            <div>Spellcaster-Drache, der in euer Element- und Hybrid-System eingebettet ist</div>
           </div>
         </div>
       </div>
@@ -358,13 +395,13 @@
         </div>
 
         <div class="stat-line">
-          <div class="stat-name">Draconic Ancestry</div>
-          <div>Choose a dragon ancestry. Your ancestry determines the damage type used by your racial features.</div>
+          <div class="stat-name">Elemental Ancestry</div>
+          <div>Choose one Main Element and one Sub-Element from that element group. This determines the damage theme, resistance, and flavor of your racial features.</div>
         </div>
 
         <div class="stat-line">
-          <div class="stat-name">Draconic Resistance</div>
-          <div>You have resistance to the damage type associated with your Draconic Ancestry.</div>
+          <div class="stat-name">Elemental Resistance</div>
+          <div>You have resistance to the primary damage type associated with your chosen element path.</div>
         </div>
 
         <div class="stat-line">
@@ -413,7 +450,7 @@
         <div class="card gift">
           <div class="lvl">Gift Option</div>
           <h3>Scaled Focus</h3>
-          <p>When you cast a spell that deals damage matching your Draconic Ancestry, you can reroll one damage die of that spell. You can do this a number of times equal to your proficiency bonus per long rest.</p>
+          <p>When you cast a spell that deals damage matching your Elemental Ancestry, you can reroll one damage die of that spell. You can do this a number of times equal to your proficiency bonus per long rest.</p>
         </div>
 
         <div class="card gift">
@@ -425,29 +462,68 @@
         <div class="card gift">
           <div class="lvl">Gift Option</div>
           <h3>Elemental Surge</h3>
-          <p>Once on each of your turns, when you deal damage with a spell that matches your Draconic Ancestry, you can add your proficiency bonus to one damage roll of that spell.</p>
+          <p>Once on each of your turns, when you deal damage with a spell that matches your Elemental Ancestry, you can add your proficiency bonus to one damage roll of that spell.</p>
         </div>
 
         <div class="card gift">
           <div class="lvl">Gift Option</div>
           <h3>Mantle of Scales</h3>
-          <p>When you take damage of the type associated with your Draconic Ancestry, you can use your reaction to harden your scales and gain temporary hit points equal to your Charisma modifier + your proficiency bonus. Usable proficiency bonus times per long rest.</p>
+          <p>When you take damage of the type associated with your Elemental Ancestry, you can use your reaction to harden your scales and gain temporary hit points equal to your Charisma modifier + your proficiency bonus. Usable proficiency bonus times per long rest.</p>
         </div>
 
         <div class="card gift">
           <div class="lvl">Build Advice</div>
-          <h3>Best Sorcerer Picks</h3>
-          <p><strong>Level 3:</strong> Scaled Focus is the cleanest early damage value. <strong>Level 5:</strong> Wing Burst for mobility or Elemental Surge for raw output. Draconic Mind is the safest utility pick.</p>
+          <h3>Beste Caster-Picks</h3>
+          <p><strong>Level 3:</strong> Scaled Focus. <strong>Level 5:</strong> Wing Burst für Mobilität oder Elemental Surge für mehr Output. Draconic Mind ist die sichere Utility-Option.</p>
         </div>
       </div>
     </section>
 
-    <section id="ancestry" class="tab">
+    <section id="elements" class="tab">
       <div class="card">
-        <h2 class="section-title">Draconic Ancestries</h2>
-        <div class="ancestry-controls" id="ancestryControls"></div>
-        <div class="ancestry-box" id="ancestryDisplay"></div>
-        <div class="footer-note">Breath shape is chosen with the ancestry entry on this page, so you have a cleaner reference block for the race.</div>
+        <h2 class="section-title">Elements & Hybrids</h2>
+
+        <div class="grid-2">
+          <div class="info-box">
+            <h3>Main Element auswählen</h3>
+            <div class="controls" id="mainControls"></div>
+            <div class="subcontrols" id="subControls"></div>
+            <div class="info-box" id="subDisplay"></div>
+          </div>
+
+          <div class="info-box">
+            <h3>Stärken / Schwächen</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Element</th>
+                  <th>Stark gegen</th>
+                  <th>Neutral</th>
+                  <th>Schwach gegen</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Fire</td><td>Natur</td><td>Lightning</td><td>Water</td></tr>
+                <tr><td>Water</td><td>Fire</td><td>Natur</td><td>Lightning</td></tr>
+                <tr><td>Lightning</td><td>Water</td><td>Fire</td><td>Natur</td></tr>
+                <tr><td>Natur</td><td>Lightning</td><td>Water</td><td>Fire</td></tr>
+              </tbody>
+            </table>
+            <div class="note">
+              Das hier ist die direkte Übertragung eures Systems auf die Dragon-Blooded-Ancestry. Das ist deutlich stimmiger als die alten Farb-Drachen.
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3 style="margin-top:0">Hybrid Dragons</h3>
+        <div class="hybrid-layout">
+          <div class="info-box">
+            <div class="hybrid-list" id="hybridControls"></div>
+          </div>
+          <div class="info-box" id="hybridDisplay"></div>
+        </div>
       </div>
     </section>
 
@@ -459,10 +535,10 @@
             <div class="level">1</div>
             <div>
               <h3>Base Identity</h3>
-              <div class="small">You start with the parts that actually define the race.</div>
+              <div class="small">Der Charakter startet direkt mit dem Element-Fokus.</div>
               <ul>
-                <li>Draconic Ancestry</li>
-                <li>Damage Resistance</li>
+                <li>Elemental Ancestry</li>
+                <li>Elemental Resistance</li>
                 <li>Breath Weapon</li>
                 <li>Prestidigitation + 1 Sorcerer cantrip</li>
               </ul>
@@ -473,7 +549,7 @@
             <div class="level">3</div>
             <div>
               <h3>First Draconic Gift</h3>
-              <div class="small">This is where you start specializing into flight, spell damage, mind power, or defense.</div>
+              <div class="small">Ab hier spezialisierst du dich weiter als Caster, Flieger oder Utility-Drache.</div>
             </div>
           </div>
 
@@ -481,7 +557,7 @@
             <div class="level">5</div>
             <div>
               <h3>Second Draconic Gift</h3>
-              <div class="small">Your breath weapon scales to 2d10 and the race begins to feel distinctly stronger.</div>
+              <div class="small">Breath Weapon steigt auf 2d10 und die Rasse wird spürbar stärker.</div>
             </div>
           </div>
 
@@ -489,7 +565,7 @@
             <div class="level">8</div>
             <div>
               <h3>True Dragon Form</h3>
-              <div class="small">Main action to activate. Stays active until you end it, get incapacitated, or die.</div>
+              <div class="small">Aktivierung mit Main Action. Bleibt aktiv, bis du sie beendest, kampfunfähig wirst oder stirbst.</div>
               <ul>
                 <li>40-foot flying speed</li>
                 <li>AC floor of 13 + Dex</li>
@@ -511,7 +587,7 @@
             <div class="level">17</div>
             <div>
               <h3>Late-Game Scale</h3>
-              <div class="small">Breath Weapon damage becomes 4d10, keeping the ancestry feature relevant in high-level play.</div>
+              <div class="small">Breath Weapon damage becomes 4d10.</div>
             </div>
           </div>
         </div>
@@ -532,50 +608,488 @@
       });
     });
 
-    const ancestries = [
-      {name:'Black', type:'Acid', shape:'30-foot line', desc:'Corrosive draconic blood. Great if you want a classic destructive feel.'},
-      {name:'Blue', type:'Lightning', shape:'30-foot line', desc:'The cleanest choice for a sharp, aggressive spellcaster theme.'},
-      {name:'Red', type:'Fire', shape:'15-foot cone', desc:'The obvious blaster pick. Best pure dragon fantasy.'},
-      {name:'White', type:'Cold', shape:'15-foot cone', desc:'Colder, harsher, and a bit more predatory in tone.'},
-      {name:'Green', type:'Poison', shape:'15-foot cone', desc:'Works better for toxic control flavor than pure damage fantasy.'},
-      {name:'Amethyst', type:'Force', shape:'15-foot cone', desc:'Very strong magical flavor. Probably the cleanest nonstandard Sorcerer option.'},
-      {name:'Crystal', type:'Radiant', shape:'15-foot cone', desc:'Leans noble and mystical rather than savage.'},
-      {name:'Emerald', type:'Psychic', shape:'15-foot cone', desc:'Best if you want a more mind-linked, eerie dragon vibe.'},
-      {name:'Sapphire', type:'Thunder', shape:'30-foot line', desc:'Explosive and loud. Good for a more violent arcane identity.'},
-      {name:'Topaz', type:'Necrotic', shape:'15-foot cone', desc:'Dark, strange, and probably the most villain-coded option.'}
+    const elementData = {
+      Fire: {
+        damage: 'Fire',
+        shape: '15-foot cone',
+        subs: {
+          Inferno: [
+            'Standard Feuerdrache',
+            'spuckt Flammen',
+            'resistent zu Feuer-Dmg',
+            'anfällig auf Bludgeoning',
+            'Mund nass verhindert Feuerspeien'
+          ],
+          Lava: [
+            'schleudert Lavaprojektil',
+            'Burst Dmg bei Einschlag',
+            'bestimmte Anzahl an Schüssen',
+            'muss Gestein fressen zum Aufladen',
+            'Lava bleibt kurz liegen'
+          ],
+          Combustion: [
+            'kann sich sicher selbst entzünden',
+            'normale Schläge können Feuer verursachen',
+            'naher Radius kann Gegner entzünden',
+            'wenn nass, weniger effektiv',
+            'physische Angriffe im Feuer-Modus machen Feuer-Dmg'
+          ],
+          Solar: [
+            'kanalisiert Sonnenenergie',
+            'konzentrierter Feuerstrahl',
+            'sehr hoher Einzelzielschaden',
+            'muss Angriff laden',
+            'Blind-Effekt möglich'
+          ],
+          Detonation: [
+            'Feuerprojektile für Fernkampf',
+            'AoE Damage + Rückstoß',
+            'Mund nass verhindert Feuerspeien',
+            'Projektile können in der Luft detonieren'
+          ],
+          Emberstorm: [
+            'Funken erhitzen Boden',
+            'Kontakt mit Fläche verursacht Dmg',
+            'Mund nass verhindert Feuerspeien',
+            'muss Holz fressen zum Aufladen'
+          ],
+          Heat: [
+            'Wärme-Aura',
+            'kann Wärme stark erhöhen',
+            'Körper quasi keine Hitze-Probleme',
+            'muss viel fressen um Hitze zu halten',
+            'kann Eis/Kälte besser trotzen'
+          ],
+          "Flame Ward": [
+            'spuckt Feuer um Flammenwände zu erzeugen',
+            'Berührung verursacht Dmg',
+            'keine Durchsicht durch Wand',
+            'Form anpassbar',
+            'Wasser löscht Teile der Wand'
+          ],
+          Phoenix: [
+            'heilende Feuerenergie',
+            'heilt Verbündete im Radius',
+            'evtl. Wiederbelebung 1x',
+            'entfernt negative Feuer-/Burn-Effekte',
+            'starke Nothilfe'
+          ],
+          Reignite: [
+            'entfacht Lebensenergie erneut',
+            'heilt über Zeit',
+            'verstärkt kurz Angriffskraft',
+            'entfernt Schwächungs-Effekte',
+            'auch auf sich selbst nutzbar'
+          ]
+        }
+      },
+
+      Water: {
+        damage: 'Cold / Water',
+        shape: '30-foot line',
+        subs: {
+          Abyss: [
+            'Standard Wasserdrache',
+            'hoher Wasserdruck',
+            'Aufprall Dmg + Knockback',
+            'begrenzte Wasserreserven je Körpergröße',
+            'kann Feuer löschen'
+          ],
+          Tidal: [
+            'beschwört große Wassermassen',
+            'erzeugt Wellen',
+            'Aufprall verursacht Dmg + Knockback',
+            'Wassermassen passen sich Umgebung an'
+          ],
+          Glacier: [
+            'extrem kaltes Wasser friert bei Aufprall',
+            'stunnt + hoher Dmg wenn Eis bricht',
+            'kann Barrieren erzeugen',
+            'Kontrolle von Bereichen',
+            'zu warme Umgebung schwächt Eis'
+          ],
+          Jetstream: [
+            'kochendes Wasser mit hohem Druck',
+            'beim Aufprall kleine Flächen-Dmg',
+            'gut gegen Eisformationen'
+          ],
+          Frostbite: [
+            'eiskaltes Gas verlangsamt/einfriert',
+            'kann Eisflächen erzeugen',
+            'zu warme Umgebung schwächt Eis',
+            'Eiszapfen auf dem Boden möglich'
+          ],
+          Mistveil: [
+            'dichte Nebelzonen',
+            'blockiert Sicht',
+            'gut für taktische Rückzüge',
+            'nutzt oft normale physische Angriffe'
+          ],
+          "Current Guide": [
+            'lebt unter Wasser + kann unter Wasser atmen',
+            'sehr schnell im Wasser',
+            'kann Strömungen kontrollieren',
+            'kann kurz Wasser verlassen',
+            'anfälliger auf X Schaden an Land'
+          ],
+          Springwater: [
+            'heilende Wasserquellen',
+            'regeneriert getroffene Kreaturen',
+            'Heilung über mehrere Sekunden',
+            'entfernt leichte negative Effekte',
+            'guter Gruppenheiler'
+          ]
+        }
+      },
+
+      Lightning: {
+        damage: 'Lightning',
+        shape: '30-foot line',
+        subs: {
+          Tempest: [
+            'erzeugt starke Einzelblitze',
+            'Blitze ignorieren teils Armor',
+            'wenn Körper nass -> mehr Effekt',
+            'Blitze springen nicht über',
+            'kann Ziele betäuben'
+          ],
+          Arc: [
+            'Blitze springen bis zu 3 mal',
+            'direkter Treffer macht vollen Dmg',
+            'weitere Sprünge machen weniger',
+            'ignoriert Armor',
+            'gut gegen Horden'
+          ],
+          "Plasma Core": [
+            'lädt Energie auf',
+            'kann sich währenddessen bewegen',
+            'schießt Kugelblitze',
+            'mehrere Charges möglich',
+            'Kugel zieht sich ins Ziel wenn nah genug'
+          ],
+          "Static Field": [
+            'lädt Körper auf',
+            'Blitze springen in kleinem Radius',
+            'wenn Körper nass ist, kein Springen',
+            'verlangsamt + Dmg'
+          ],
+          Pulse: [
+            'kurze elektrische Schockwellen',
+            'mehrere schnelle Treffer',
+            'gut gegen schnelle oder fliegende Gegner',
+            'sehr schnelle Aktivierung'
+          ],
+          Thunderclap: [
+            'entlädt Donnerschockwelle',
+            'Schallschaden im Radius',
+            'Gegner können taub werden',
+            'starker Knockback',
+            'gut zum Unterbrechen'
+          ],
+          Conductor: [
+            'wirkt als Energieleiter',
+            'verstärkt Blitzfähigkeiten von Verbündeten',
+            'kann Energie im Team weiterleiten',
+            'reduziert Cooldowns elektrischer Fähigkeiten'
+          ],
+          "Bioelectric Surge": [
+            'bioelektrische Heilung',
+            'stimuliert Verbündete',
+            'heilt sofort einen Teil LP',
+            'entfernt Lähmungen',
+            'gut bei verletzten Verbündeten'
+          ],
+          "Energy Flow": [
+            'verteilt Energie im Team',
+            'regeneriert langsam LP',
+            'kann zusätzliche Ausdauer geben',
+            'Status Energized',
+            'gut für längere Kämpfe'
+          ]
+        }
+      },
+
+      Natur: {
+        damage: 'Poison / Nature',
+        shape: '15-foot cone',
+        subs: {
+          Venom: [
+            'wenn gebissen, Gegner vergiftet',
+            'Gift wird stärker je länger es hält',
+            'Con Save kann Gift lösen',
+            'kann Gift als Gas versprühen'
+          ],
+          Wildfang: [
+            'instinktive Tierkraft',
+            'starker Nahkampf',
+            'erhöhte Angriffsgeschwindigkeit',
+            'kann Gegner zurückstoßen',
+            'aggressiver Kampfstil'
+          ],
+          Bone: [
+            'keine Schuppen -> Knochen als Armor',
+            'mehr Knochen = mehr Armor',
+            'starker Nahkampf',
+            'kann Knochen fernkampfig nutzen',
+            'kann Knochenstrukturen bilden'
+          ],
+          Acid: [
+            'ätzende Natur-Säure',
+            'sofortiger Schaden + Damage over Time',
+            'senkt gegnerische Rüstung/Verteidigung',
+            'kann Ausrüstung/Schuppen teils auflösen',
+            'gut gegen schwere Panzerung'
+          ],
+          Sporeburst: [
+            'Giftwolken',
+            'vergiftet + schwächt',
+            'Con Save kann lösen',
+            'mehrere Sekunden Wirkung'
+          ],
+          Razorleaf: [
+            'tarnt sich im Wald',
+            'rasiermesserscharfe Klingen',
+            'gut im Tarnen',
+            'Gottesanbeterin-like',
+            'Biss betäubt teils Gegner'
+          ],
+          Rootbind: [
+            'Wurzeln aus dem Boden',
+            'festhalten oder verlangsamen',
+            'kontrolliert Bereiche',
+            'kann mehrere Gegner treffen',
+            'sehr starke Crowd Control'
+          ],
+          "Verdant Heal": [
+            'Pflanzen wachsen um Verbündete',
+            'kontinuierliche Heilung',
+            'Verbundene erhalten leichte Schadensreduktion',
+            'mehrere Sekunden Effekt',
+            'gut zur Stabilisierung'
+          ],
+          Lifewaver: [
+            'wächst Pflanzen mit Früchten',
+            'verschiedene Effekte möglich',
+            'Heal, Gift, normales Essen'
+          ]
+        }
+      }
+    };
+
+    const hybridData = [
+      {
+        name:'Steam Dragon',
+        elements:'Lava (Fire) + Jetstream (Water)',
+        role:'Main DPS',
+        description:[
+          'Erzeugt überhitzten Dampf',
+          'Burn Schaden über Zeit',
+          'Dampf reduziert Sicht',
+          'Dampfexplosion bei starken Treffern',
+          'Stark gegen Gruppen'
+        ]
+      },
+      {
+        name:'Thunder Tide Dragon',
+        elements:'Tidal (Water) + Arc (Lightning)',
+        role:'Main DPS',
+        description:[
+          'Elektrisierte Wasserwellen',
+          'AoE Schaden',
+          'Knockback Effekt',
+          'Chance auf Stun',
+          'Stark im Wasser'
+        ]
+      },
+      {
+        name:'Frost Storm Dragon',
+        elements:'Glacier (Water) + Static Field (Lightning)',
+        role:'Sub DPS',
+        description:[
+          'Elektrischer Eissturm',
+          'Verlangsamt Gegner',
+          'Eisflächen entstehen',
+          'Kontinuierlicher Schaden',
+          'Sehr gute Crowd Control'
+        ]
+      },
+      {
+        name:'Solar Tempest Dragon',
+        elements:'Solar (Fire) + Tempest (Lightning)',
+        role:'Main DPS',
+        description:[
+          'Feuersturm mit Blitzeinschlägen',
+          'Sehr hoher Burst Schaden',
+          'Blind Effekt möglich',
+          'Blitze ignorieren teilweise Armor',
+          'Stark gegen große Gegner'
+        ]
+      },
+      {
+        name:'Acid Rain Dragon',
+        elements:'Acid (Natur) + Mistveil (Water)',
+        role:'Sub DPS',
+        description:[
+          'Säurenebel über Schlachtfeld',
+          'Damage over Time',
+          'Senkt gegnerische Rüstung',
+          'Nebel reduziert Sicht',
+          'Sehr gute Flächenkontrolle'
+        ]
+      },
+      {
+        name:'Thunder Root Dragon',
+        elements:'Rootbind (Natur) + Thunderclap (Lightning)',
+        role:'Supporter',
+        description:[
+          'Elektrisierte Wurzeln fesseln Gegner',
+          'Kurzer Stun',
+          'Kontrolliert Bereiche',
+          'Hilft Teamkombos',
+          'Sehr stark gegen Gruppen'
+        ]
+      },
+      {
+        name:'Ash Plague Dragon',
+        elements:'Detonation (Fire) + Sporeburst (Natur)',
+        role:'Sub DPS',
+        description:[
+          'Explosive Aschewolken',
+          'Burn + Gift Schaden',
+          'Sporen verbreiten sich',
+          'Schwächt Gegner',
+          'Gut gegen Horden'
+        ]
+      },
+      {
+        name:'Burning Forest Dragon',
+        elements:'Heat (Fire) + Razorleaf (Natur)',
+        role:'Main DPS',
+        description:[
+          'Brennende Pflanzen greifen an',
+          'Schnelle Nahkampfangriffe',
+          'Burn Schaden',
+          'Pflanzen wachsen im Kampf',
+          'Aggressiver Kampfstil'
+        ]
+      },
+      {
+        name:'Bio Storm Dragon',
+        elements:'Bioelectric Surge (Lightning) + Lifewaver (Natur)',
+        role:'Healer',
+        description:[
+          'Elektrische Naturheilung',
+          'Heilt Verbündete im Radius',
+          'Kleine Schocks gegen Gegner',
+          'Entfernt Status Effekte',
+          'Sehr gut im Team'
+        ]
+      },
+      {
+        name:'Phoenix Tide Dragon',
+        elements:'Phoenix (Fire) + Springwater (Water)',
+        role:'Supporter / Healer',
+        description:[
+          'Heilende Flammenwellen',
+          'Regeneriert Verbündete',
+          'Burn gegen Gegner',
+          'Kann Wiederbelebung auslösen',
+          'Stabilisiert Teamkämpfe'
+        ]
+      }
     ];
 
-    const controls = document.getElementById('ancestryControls');
-    const display = document.getElementById('ancestryDisplay');
+    const mainControls = document.getElementById('mainControls');
+    const subControls = document.getElementById('subControls');
+    const subDisplay = document.getElementById('subDisplay');
+    const hybridControls = document.getElementById('hybridControls');
+    const hybridDisplay = document.getElementById('hybridDisplay');
 
-    function renderAncestry(index){
-      const a = ancestries[index];
-      display.innerHTML = `
-        <h3>${a.name} Dragon Blooded</h3>
-        <div class="pill-wrap">
-          <span class="pill">Damage Type: ${a.type}</span>
-          <span class="pill">Breath Shape: ${a.shape}</span>
-          <span class="pill">Resistance: ${a.type}</span>
-        </div>
-        <p class="muted">${a.desc}</p>
-        <ul>
-          <li><strong>Breath Weapon:</strong> uses <strong>${a.type}</strong> damage in a <strong>${a.shape}</strong>.</li>
-          <li><strong>Spell Synergy:</strong> features like <em>Scaled Focus</em>, <em>Elemental Surge</em>, and <em>True Dragon Form</em> key off this damage type.</li>
-          <li><strong>Best fit:</strong> choose the ancestry that matches the damage spells you expect to cast most often.</li>
-        </ul>
-      `;
-      [...controls.children].forEach((btn, i) => btn.classList.toggle('active', i === index));
+    let currentMain = 'Fire';
+
+    function renderMainButtons(){
+      Object.keys(elementData).forEach((name, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'ctrl-btn' + (idx === 0 ? ' active' : '');
+        btn.textContent = name;
+        btn.addEventListener('click', () => {
+          currentMain = name;
+          [...mainControls.children].forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderSubButtons(name);
+        });
+        mainControls.appendChild(btn);
+      });
     }
 
-    ancestries.forEach((a, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'ancestry-btn' + (i === 0 ? ' active' : '');
-      btn.textContent = a.name;
-      btn.addEventListener('click', () => renderAncestry(i));
-      controls.appendChild(btn);
-    });
+    function renderSubButtons(mainName){
+      subControls.innerHTML = '';
+      const subs = Object.keys(elementData[mainName].subs);
 
-    renderAncestry(0);
+      subs.forEach((sub, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+        btn.textContent = sub;
+        btn.addEventListener('click', () => {
+          [...subControls.children].forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderSubDisplay(mainName, sub);
+        });
+        subControls.appendChild(btn);
+      });
+
+      renderSubDisplay(mainName, subs[0]);
+    }
+
+    function renderSubDisplay(mainName, subName){
+      const info = elementData[mainName];
+      const bullets = info.subs[subName].map(x => `<li>${x}</li>`).join('');
+
+      subDisplay.innerHTML = `
+        <h3>${subName} Dragon Blooded</h3>
+        <div class="pill-wrap">
+          <span class="pill">Main Element: ${mainName}</span>
+          <span class="pill">Sub-Element: ${subName}</span>
+          <span class="pill">Damage Theme: ${info.damage}</span>
+          <span class="pill">Breath Shape: ${info.shape}</span>
+          <span class="pill">Resistance: ${info.damage}</span>
+        </div>
+        <p class="muted">Diese Version ersetzt die alte Farbanmutung der Draconic Ancestries durch euer eigenes Element-System.</p>
+        <ul>${bullets}</ul>
+      `;
+    }
+
+    function renderHybrids(){
+      hybridData.forEach((h, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'hybrid-btn' + (idx === 0 ? ' active' : '');
+        btn.textContent = h.name;
+        btn.addEventListener('click', () => {
+          [...hybridControls.children].forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderHybridDisplay(h);
+        });
+        hybridControls.appendChild(btn);
+      });
+
+      renderHybridDisplay(hybridData[0]);
+    }
+
+    function renderHybridDisplay(h){
+      hybridDisplay.innerHTML = `
+        <h3>${h.name}</h3>
+        <div class="pill-wrap">
+          <span class="pill">Used Elements: ${h.elements}</span>
+          <span class="pill">Role: ${h.role}</span>
+        </div>
+        <p class="muted">Hybrid-Form aus zwei Sub-Elementen. Das ist bei euch die logische Weiterentwicklung über einzelne Element-Ancestries hinaus.</p>
+        <ul>${h.description.map(x => `<li>${x}</li>`).join('')}</ul>
+      `;
+    }
+
+    renderMainButtons();
+    renderSubButtons(currentMain);
+    renderHybrids();
   </script>
 </body>
 </html>
