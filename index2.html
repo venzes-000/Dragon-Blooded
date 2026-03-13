@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dragon Blooded</title>
+  <style>
+    :root{
+      --bg:#07101f;
+      --bg2:#0b1730;
+      --panel:#0d1626;
+      --panel2:#101d33;
+      --line:#21395f;
+      --text:#eef4ff;
+      --muted:#9eb3d6;
+      --blue:#67b4ff;
+      --blue2:#2b7de9;
+      --glow:0 0 0 1px rgba(103,180,255,.18), 0 12px 30px rgba(0,0,0,.28);
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(36,103,255,.18), transparent 30%),
+        linear-gradient(90deg, #07101f 0%, #091322 42%, #07101f 100%);
+      min-height:100%;
+    }
+
+    body{padding:28px}
+
+    .wrap{max-width:1100px;margin:0 auto}
+
+    h1{
+      font-size:58px;
+      line-height:1;
+      margin:0 0 10px;
+      font-weight:800;
+      letter-spacing:-1.5px
+    }
+
+    .subtitle{
+      color:var(--muted);
+      max-width:900px;
+      font-size:17px;
+      line-height:1.5;
+      margin-bottom:28px
+    }
+
+    .tabs{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:18px 0 20px
+    }
+
+    .tab-btn{
+      border:none;
+      cursor:pointer;
+      color:#07101f;
+      font-weight:800;
+      padding:14px 22px;
+      border-radius:16px;
+      background:linear-gradient(180deg,#6ec1ff,#499ef8);
+      min-width:170px;
+      box-shadow:var(--glow);
+    }
+
+    .tab-btn.inactive{
+      color:var(--text);
+      background:linear-gradient(180deg,#17263e,#101a2d);
+      border:1px solid #233c63
+    }
+
+    .tab{display:none}
+    .tab.active{display:block}
+
+    .hero-grid,.grid-2,.grid-3{
+      display:grid;
+      gap:16px
+    }
+
+    .hero-grid{grid-template-columns:1.45fr .95fr}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+    .card{
+      background:linear-gradient(180deg,rgba(12,21,37,.96),rgba(9,17,31,.96));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px 18px 16px;
+      box-shadow:var(--glow)
+    }
+
+    .card h2,.card h3{margin:0 0 10px}
+    .card h2{font-size:22px}
+    .card h3{font-size:18px}
+
+    .muted{color:var(--muted)}
+
+    .pill-wrap{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:10px 0 14px
+    }
+
+    .pill{
+      padding:7px 10px;
+      border-radius:999px;
+      background:#132641;
+      border:1px solid #2b4e82;
+      color:#d8e8ff;
+      font-size:13px
+    }
+
+    .stat-line{
+      display:grid;
+      grid-template-columns:200px 1fr;
+      gap:14px;
+      padding:11px 0;
+      border-top:1px solid rgba(36,57,95,.65)
+    }
+
+    .stat-line:first-child{
+      border-top:none;
+      padding-top:0
+    }
+
+    .stat-name{
+      font-weight:800;
+      color:#fff
+    }
+
+    .section-title{
+      margin:0 0 14px;
+      font-size:30px
+    }
+
+    .gift{height:100%}
+
+    .gift p{
+      margin:.45rem 0 0;
+      color:var(--muted);
+      line-height:1.5
+    }
+
+    .gift .lvl{
+      display:inline-block;
+      padding:5px 9px;
+      border-radius:999px;
+      background:#132641;
+      border:1px solid #2b4e82;
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:8px
+    }
+
+    .ancestry-controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:0 0 16px
+    }
+
+    .ancestry-btn{
+      background:#132641;
+      border:1px solid #2b4e82;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700
+    }
+
+    .ancestry-btn.active{
+      background:linear-gradient(180deg,#6ec1ff,#499ef8);
+      color:#07101f;
+      border-color:transparent
+    }
+
+    .ancestry-box{
+      padding:15px;
+      border-radius:18px;
+      background:#0b1424;
+      border:1px solid #223a60
+    }
+
+    .timeline{
+      display:grid;
+      gap:12px
+    }
+
+    .step{
+      display:grid;
+      grid-template-columns:90px 1fr;
+      gap:14px;
+      align-items:start;
+      padding:14px;
+      border-radius:16px;
+      background:#0b1424;
+      border:1px solid #223a60
+    }
+
+    .level{
+      font-size:26px;
+      font-weight:800;
+      color:#7cc2ff;
+      text-align:center;
+      padding-top:4px
+    }
+
+    ul{margin:8px 0 0 18px;padding:0}
+    li{margin:6px 0;line-height:1.45}
+
+    .quote{
+      font-size:18px;
+      line-height:1.55;
+      color:#dce9ff
+    }
+
+    .small{
+      font-size:14px;
+      color:var(--muted)
+    }
+
+    .footer-note{
+      margin-top:18px;
+      color:var(--muted);
+      font-size:14px
+    }
+
+    @media (max-width: 900px){
+      h1{font-size:42px}
+      .hero-grid,.grid-2,.grid-3{grid-template-columns:1fr}
+      .stat-line,.step{grid-template-columns:1fr}
+      .level{text-align:left}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Dragon Blooded</h1>
+    <div class="subtitle">
+      A homebrew dragon lineage built for a spellcaster-heavy playstyle. This version keeps the strong draconic flavor,
+      pushes naturally toward Sorcerer, and spreads the power spikes across levels instead of frontloading everything at level 1.
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn" data-tab="overview">Overview</button>
+      <button class="tab-btn inactive" data-tab="traits">Traits</button>
+      <button class="tab-btn inactive" data-tab="gifts">Draconic Gifts</button>
+      <button class="tab-btn inactive" data-tab="ancestry">Ancestries</button>
+      <button class="tab-btn inactive" data-tab="progression">Level Progression</button>
+    </div>
+
+    <section id="overview" class="tab active">
+      <div class="hero-grid">
+        <div class="card">
+          <h2>Lineage Concept</h2>
+          <p class="quote">
+            Dragon Blooded are not just descendants of dragons. Their blood actively stores draconic arcana, awakening through
+            breath, elemental resistance, magical instinct, spectral wings, and finally a permanent battle-form transformation.
+          </p>
+
+          <div class="pill-wrap">
+            <span class="pill">Caster-Oriented</span>
+            <span class="pill">Sorcerer Synergy</span>
+            <span class="pill">Breath Weapon at Level 1</span>
+            <span class="pill">Flight Access</span>
+            <span class="pill">True Dragon Form at Level 8</span>
+          </div>
+
+          <div class="grid-2">
+            <div class="ancestry-box">
+              <h3>Recommended Build</h3>
+              <ul>
+                <li><strong>Class:</strong> Sorcerer</li>
+                <li><strong>Stats:</strong> +2 Charisma, +2 Constitution</li>
+                <li><strong>Best early Gift:</strong> Scaled Focus</li>
+                <li><strong>Best later Gift:</strong> Wing Burst or Elemental Surge</li>
+              </ul>
+            </div>
+
+            <div class="ancestry-box">
+              <h3>Balance Direction</h3>
+              <ul>
+                <li>No overloaded level 1 package beyond what matters.</li>
+                <li>Flight is controlled before the full transformation.</li>
+                <li>True Dragon Form is strong, but still not a monster stat block.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Quick Rules Snapshot</h2>
+
+          <div class="stat-line">
+            <div class="stat-name">Ability Scores</div>
+            <div>Charisma +2, Constitution +2</div>
+          </div>
+
+          <div class="stat-line">
+            <div class="stat-name">Creature / Size</div>
+            <div>Humanoid, Medium</div>
+          </div>
+
+          <div class="stat-line">
+            <div class="stat-name">Speed</div>
+            <div>30 feet</div>
+          </div>
+
+          <div class="stat-line">
+            <div class="stat-name">Core Features</div>
+            <div>Draconic Ancestry, Resistance, Breath Weapon, Arcane Bloodline</div>
+          </div>
+
+          <div class="stat-line">
+            <div class="stat-name">Power Breakpoints</div>
+            <div>Gift at level 3, Gift at level 5, True Dragon Form at level 8</div>
+          </div>
+
+          <div class="stat-line">
+            <div class="stat-name">Main Hook</div>
+            <div>Spellcaster dragon race that ramps up into a permanent true-form transformation</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="traits" class="tab">
+      <div class="card">
+        <h2 class="section-title">Dragon Blooded Traits</h2>
+
+        <div class="stat-line">
+          <div class="stat-name">Creature Type</div>
+          <div>You are a Humanoid.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Size</div>
+          <div>You are Medium.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Speed</div>
+          <div>Your walking speed is 30 feet.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Ability Score Increase</div>
+          <div>Your Charisma score increases by 2, and your Constitution score increases by 2.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Draconic Ancestry</div>
+          <div>Choose a dragon ancestry. Your ancestry determines the damage type used by your racial features.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Draconic Resistance</div>
+          <div>You have resistance to the damage type associated with your Draconic Ancestry.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Breath Weapon</div>
+          <div>
+            When you take the Attack action on your turn, you can replace one of your attacks with an exhalation of destructive draconic energy.
+            If you do not have Extra Attack, you may use it as an action. Each creature in the area makes a saving throw against
+            <strong>DC = 8 + proficiency bonus + Charisma modifier</strong>. On a failure, a creature takes <strong>1d10</strong> ancestry damage,
+            or half as much on a success. The damage becomes <strong>2d10</strong> at level 5, <strong>3d10</strong> at level 11, and <strong>4d10</strong> at level 17.
+            You can use this feature a number of times equal to your proficiency bonus per long rest.
+          </div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Arcane Bloodline</div>
+          <div>You know <em>Prestidigitation</em>. You also know one additional cantrip of your choice from the Sorcerer spell list. Charisma is your spellcasting ability for these spells.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">Draconic Gifts</div>
+          <div>At level 3 and again at level 5, you gain one Draconic Gift of your choice from the Dragon Blooded gift list.</div>
+        </div>
+
+        <div class="stat-line">
+          <div class="stat-name">True Dragon Form</div>
+          <div>
+            Starting at level 8, you can use your action to awaken the full might of your draconic blood and transform into a true dragon-like form.
+            This transformation lasts until you end it as a bonus action, until you are incapacitated, or until you die. While in this form, you gain a
+            <strong>40-foot flying speed</strong>, your AC becomes <strong>13 + Dexterity modifier</strong> if higher than your current AC,
+            you may use your Breath Weapon as a <strong>bonus action</strong>, once per turn you may add your <strong>Charisma modifier</strong>
+            to one damage roll of a spell that deals your ancestry's damage type, and you have advantage on <strong>Charisma (Intimidation)</strong> checks.
+            Once you use this trait, you can't use it again until you finish a long rest.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gifts" class="tab">
+      <div class="grid-3">
+        <div class="card gift">
+          <div class="lvl">Gift Option</div>
+          <h3>Wing Burst</h3>
+          <p>As a bonus action, you manifest spectral draconic wings for 1 minute. For the duration, you gain a flying speed equal to your walking speed. Once used, this gift refreshes on a long rest.</p>
+        </div>
+
+        <div class="card gift">
+          <div class="lvl">Gift Option</div>
+          <h3>Scaled Focus</h3>
+          <p>When you cast a spell that deals damage matching your Draconic Ancestry, you can reroll one damage die of that spell. You can do this a number of times equal to your proficiency bonus per long rest.</p>
+        </div>
+
+        <div class="card gift">
+          <div class="lvl">Gift Option</div>
+          <h3>Draconic Mind</h3>
+          <p>You can communicate telepathically with any creature you can see within 30 feet, provided it understands at least one language. You also have advantage on saving throws against being charmed.</p>
+        </div>
+
+        <div class="card gift">
+          <div class="lvl">Gift Option</div>
+          <h3>Elemental Surge</h3>
+          <p>Once on each of your turns, when you deal damage with a spell that matches your Draconic Ancestry, you can add your proficiency bonus to one damage roll of that spell.</p>
+        </div>
+
+        <div class="card gift">
+          <div class="lvl">Gift Option</div>
+          <h3>Mantle of Scales</h3>
+          <p>When you take damage of the type associated with your Draconic Ancestry, you can use your reaction to harden your scales and gain temporary hit points equal to your Charisma modifier + your proficiency bonus. Usable proficiency bonus times per long rest.</p>
+        </div>
+
+        <div class="card gift">
+          <div class="lvl">Build Advice</div>
+          <h3>Best Sorcerer Picks</h3>
+          <p><strong>Level 3:</strong> Scaled Focus is the cleanest early damage value. <strong>Level 5:</strong> Wing Burst for mobility or Elemental Surge for raw output. Draconic Mind is the safest utility pick.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="ancestry" class="tab">
+      <div class="card">
+        <h2 class="section-title">Draconic Ancestries</h2>
+        <div class="ancestry-controls" id="ancestryControls"></div>
+        <div class="ancestry-box" id="ancestryDisplay"></div>
+        <div class="footer-note">Breath shape is chosen with the ancestry entry on this page, so you have a cleaner reference block for the race.</div>
+      </div>
+    </section>
+
+    <section id="progression" class="tab">
+      <div class="card">
+        <h2 class="section-title">Level Progression</h2>
+        <div class="timeline">
+          <div class="step">
+            <div class="level">1</div>
+            <div>
+              <h3>Base Identity</h3>
+              <div class="small">You start with the parts that actually define the race.</div>
+              <ul>
+                <li>Draconic Ancestry</li>
+                <li>Damage Resistance</li>
+                <li>Breath Weapon</li>
+                <li>Prestidigitation + 1 Sorcerer cantrip</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="level">3</div>
+            <div>
+              <h3>First Draconic Gift</h3>
+              <div class="small">This is where you start specializing into flight, spell damage, mind power, or defense.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="level">5</div>
+            <div>
+              <h3>Second Draconic Gift</h3>
+              <div class="small">Your breath weapon scales to 2d10 and the race begins to feel distinctly stronger.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="level">8</div>
+            <div>
+              <h3>True Dragon Form</h3>
+              <div class="small">Main action to activate. Stays active until you end it, get incapacitated, or die.</div>
+              <ul>
+                <li>40-foot flying speed</li>
+                <li>AC floor of 13 + Dex</li>
+                <li>Breath Weapon becomes bonus action</li>
+                <li>Add Charisma mod once per turn to matching spell damage</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="level">11</div>
+            <div>
+              <h3>Breath Upgrade</h3>
+              <div class="small">Breath Weapon damage becomes 3d10.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="level">17</div>
+            <div>
+              <h3>Late-Game Scale</h3>
+              <div class="small">Breath Weapon damage becomes 4d10, keeping the ancestry feature relevant in high-level play.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabs = document.querySelectorAll('.tab');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.add('inactive'));
+        btn.classList.remove('inactive');
+        const target = btn.dataset.tab;
+        tabs.forEach(tab => tab.classList.toggle('active', tab.id === target));
+      });
+    });
+
+    const ancestries = [
+      {name:'Black', type:'Acid', shape:'30-foot line', desc:'Corrosive draconic blood. Great if you want a classic destructive feel.'},
+      {name:'Blue', type:'Lightning', shape:'30-foot line', desc:'The cleanest choice for a sharp, aggressive spellcaster theme.'},
+      {name:'Red', type:'Fire', shape:'15-foot cone', desc:'The obvious blaster pick. Best pure dragon fantasy.'},
+      {name:'White', type:'Cold', shape:'15-foot cone', desc:'Colder, harsher, and a bit more predatory in tone.'},
+      {name:'Green', type:'Poison', shape:'15-foot cone', desc:'Works better for toxic control flavor than pure damage fantasy.'},
+      {name:'Amethyst', type:'Force', shape:'15-foot cone', desc:'Very strong magical flavor. Probably the cleanest nonstandard Sorcerer option.'},
+      {name:'Crystal', type:'Radiant', shape:'15-foot cone', desc:'Leans noble and mystical rather than savage.'},
+      {name:'Emerald', type:'Psychic', shape:'15-foot cone', desc:'Best if you want a more mind-linked, eerie dragon vibe.'},
+      {name:'Sapphire', type:'Thunder', shape:'30-foot line', desc:'Explosive and loud. Good for a more violent arcane identity.'},
+      {name:'Topaz', type:'Necrotic', shape:'15-foot cone', desc:'Dark, strange, and probably the most villain-coded option.'}
+    ];
+
+    const controls = document.getElementById('ancestryControls');
+    const display = document.getElementById('ancestryDisplay');
+
+    function renderAncestry(index){
+      const a = ancestries[index];
+      display.innerHTML = `
+        <h3>${a.name} Dragon Blooded</h3>
+        <div class="pill-wrap">
+          <span class="pill">Damage Type: ${a.type}</span>
+          <span class="pill">Breath Shape: ${a.shape}</span>
+          <span class="pill">Resistance: ${a.type}</span>
+        </div>
+        <p class="muted">${a.desc}</p>
+        <ul>
+          <li><strong>Breath Weapon:</strong> uses <strong>${a.type}</strong> damage in a <strong>${a.shape}</strong>.</li>
+          <li><strong>Spell Synergy:</strong> features like <em>Scaled Focus</em>, <em>Elemental Surge</em>, and <em>True Dragon Form</em> key off this damage type.</li>
+          <li><strong>Best fit:</strong> choose the ancestry that matches the damage spells you expect to cast most often.</li>
+        </ul>
+      `;
+      [...controls.children].forEach((btn, i) => btn.classList.toggle('active', i === index));
+    }
+
+    ancestries.forEach((a, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'ancestry-btn' + (i === 0 ? ' active' : '');
+      btn.textContent = a.name;
+      btn.addEventListener('click', () => renderAncestry(i));
+      controls.appendChild(btn);
+    });
+
+    renderAncestry(0);
+  </script>
+</body>
+</html>
