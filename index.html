@@ -468,7 +468,7 @@
           <div class="card">
             <h2 class="section-title">Overview</h2>
             <p>Dragon Blooded sind keine normalen Dragonborn. In ihrem Blut liegt gespeicherte drakonische Arkana, die sich nicht nur in roher Elementarkraft, sondern auch in einem ausgeprägten Spellcaster-Fokus zeigt. Statt einer einfachen Herkunft nutzt dieses System ein <strong>Main- und Sub-Element-Modell</strong>, in dem Element, Breath-Stil, Resistenz und Kampfthema direkt miteinander verknüpft sind.</p>
-            <p>Im Kern dreht sich die Rasse um <strong>Elemental Ancestry</strong>, <strong>Breath Weapon</strong>, <strong>Arcane Bloodline</strong> und die <strong>True Dragon Form</strong> ab Level 8. Hybride sind vollständig integriert, damit sich Mischformen nicht wie ein Zusatz, sondern wie ein echter Teil des Systems anfühlen. <strong>Draconic Gifts wurden vollständig entfernt.</strong></p>
+            <p>Im Kern dreht sich die Rasse um <strong>Elemental Ancestry</strong>, <strong>Breath Weapon</strong> und die <strong>True Dragon Form</strong> ab Level 8. Hybride sind vollständig integriert, damit sich Mischformen nicht wie ein Zusatz, sondern wie ein echter Teil des Systems anfühlen. <strong>Draconic Gifts wurden vollständig entfernt.</strong></p>
             <div class="pill-wrap">
               <span class="pill">Spellcaster-Fokus</span>
               <span class="pill">Main + Sub Elements</span>
@@ -494,7 +494,7 @@
               <div class="stat-list">
                 <div class="stat-line"><div class="stat-name">Creature / Size</div><div>Humanoid, Medium</div></div>
                 <div class="stat-line"><div class="stat-name">Speed</div><div>30 feet</div></div>
-                <div class="stat-line"><div class="stat-name">Core Features</div><div>Elemental Ancestry, Resistance, Breath Weapon, Arcane Bloodline, True Dragon Form</div></div>
+                <div class="stat-line"><div class="stat-name">Core Features</div><div>Elemental Ancestry, Resistance, Breath Weapon, True Dragon Form</div></div>
                 <div class="stat-line"><div class="stat-name">Power Breakpoint</div><div>True Dragon Form at Level 8</div></div>
               </div>
             </div>
@@ -552,28 +552,42 @@
               </div>
             </div>
             <div class="stat-line">
-              <div class="stat-name">Arcane Bloodline</div>
-              <div>
-                <ul>
-                  <li>Du lernst <strong>Prestidigitation</strong>.</li>
-                  <li>Du lernst zusätzlich <strong>1 weiteren Sorcerer Cantrip</strong>.</li>
-                  <li><strong>Charisma</strong> ist deine Spellcasting Ability für diese Rassenmagie.</li>
-                </ul>
-              </div>
-            </div>
-            <div class="stat-line">
               <div class="stat-name">True Dragon Form</div>
               <div>
                 <ul>
                   <li>Verfügbar ab <strong>Level 8</strong>.</li>
                   <li>Aktivierung mit einer <strong>Action</strong>.</li>
-                  <li>Bleibt aktiv, bis du sie beendest, incapacitated wirst oder stirbst.</li>
-                  <li>40-foot flying speed.</li>
-                  <li>AC floor: <strong>13 + Dex</strong>.</li>
-                  <li>Breath Weapon kann als <strong>Bonus Action</strong> genutzt werden.</li>
-                  <li>Einmal pro Turn addierst du deinen <strong>Charisma Modifier</strong> auf passenden Spell Damage.</li>
-                  <li>Vorteil auf <strong>Charisma (Intimidation)</strong>.</li>
+                  <li><strong>Dauer:</strong> Im Kampf: Basis-Runden basierend auf Level, dann Exhaustion Points alle 2 Runden. Außerhalb: Basis × 5.</li>
+                  <li>Kann Fliegen.</li>
+                  <li>Standart AC ist <strong>16 + Drachen Schuppen</strong>.</li>
                 </ul>
+                <div class="notice">
+                  <strong>Dauer-System</strong>
+                  <ul>
+                    <li><strong>Im Kampf</strong>
+                      <ol>
+                        <li>Du startest mit <strong>Basis</strong> Runden in der Form, danach erhältst du 1 Exhaustion Point.</li>
+                        <li>Dann läuft die Form für weitere <strong>Basis–1</strong> Runden, bevor du den nächsten Point erhältst.</li>
+                        <li>Dann weitere <strong>Basis–2</strong> Runden etc., bis <strong>Basis = 0</strong> (Form endet automatisch).</li>
+                      </ol>
+                    </li>
+                    <li><strong>Basis nach Level</strong>
+                      <table>
+                        <thead><tr><th>Level</th><th>Basis</th></tr></thead>
+                        <tbody>
+                          <tr><td>8–9</td><td>3</td></tr>
+                          <tr><td>10–11</td><td>4</td></tr>
+                          <tr><td>12–13</td><td>5</td></tr>
+                          <tr><td>14–15</td><td>6</td></tr>
+                          <tr><td>16–17</td><td>7</td></tr>
+                          <tr><td>18–19</td><td>8</td></tr>
+                          <tr><td>20</td><td>9</td></tr>
+                        </tbody>
+                      </table>
+                    </li>
+                    <li><strong>Außerhalb von Kämpfen:</strong> Basis × 5.</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -610,29 +624,16 @@
                 <li>Elemental Ancestry</li>
                 <li>Elemental Resistance</li>
                 <li>Breath Weapon</li>
-                <li>Prestidigitation + 1 Sorcerer cantrip</li>
+                <li>Breath Dmg = Normal Breath : 2</li>
               </ul>
             </div>
             <div class="timeline-item">
               <h3>Level 8</h3>
               <ul>
                 <li>True Dragon Form</li>
-                <li>40-foot flying speed</li>
-                <li>AC floor 13 + Dex</li>
-                <li>Breath Weapon becomes bonus action</li>
-                <li>Add Charisma mod once per turn to matching spell damage</li>
-              </ul>
-            </div>
-            <div class="timeline-item">
-              <h3>Level 11</h3>
-              <ul>
-                <li>Breath Upgrade to 3d10</li>
-              </ul>
-            </div>
-            <div class="timeline-item">
-              <h3>Level 17</h3>
-              <ul>
-                <li>Breath Upgrade to 4d10</li>
+                <li>Stronger Dragon Breath</li>
+                <li>Better Movement</li>
+                <li>neue 16 AC + Drachen Schuppen</li>
               </ul>
             </div>
           </div>
