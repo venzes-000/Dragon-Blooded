@@ -839,10 +839,6 @@
                 <label for="strMod">STR Mod</label>
                 <input id="strMod" type="number" min="-5" max="10" value="3" />
               </div>
-              <div class="field">
-                <label for="conMod">KON Mod</label>
-                <input id="conMod" type="number" min="-5" max="10" value="3" />
-              </div>
               <div class="field standard-only" style="grid-column:1/-1">
                 <label>Mutationen (Mehrfachauswahl)</label>
                 <div class="multi-select" id="mutationSelector"></div>
@@ -1042,7 +1038,7 @@
           'Conductive Scales': { type:'percentBreath', value:0.10, note:'+10% auf Breath / Blitzfähigkeit' },
           'Extra Charge': { type:'note', note:'Hinweis: +1 Blitzladung' },
           'Arc Jump': { type:'note', note:'Hinweis: springt auf zusätzlichen Gegner' },
-          'Living Lightning': { type:'note', note:'Hinweis: 1x pro Tag 2x Dmg, hier nicht automatisch verdoppelt' }
+          'Living Lightning': { type:'note', note:'Hinweis: 1x pro Tag 2x Breath-Schaden (wird hier automatisch verdoppelt)' }
         },
         Natur: {
           'Razor Leaves': { type:'percentPhysical', value:0.10, note:'+10% auf physische Angriffe' },
@@ -1424,7 +1420,6 @@
       const habitatActive = dragonKind === 'Standard-Drache' && qs('#habitatActive').value === 'ja';
       const level = clamp(Number(qs('#playerLevel').value || 1), 1, 20);
       const strMod = Number(qs('#strMod').value || 0);
-      const conMod = Number(qs('#conMod').value || 0);
 
       let selectedMutationNames = [];
       if(dragonKind === 'Standard-Drache'){
@@ -1489,25 +1484,40 @@
           damageType = 'Elemental';
         } else {
           const subInfo = getSubInfo(mainElement, subElement);
-          shape = subInfo ? subInfo.shape : 'Unbekannt';
+          shape = subInfo?.shape || getBreathShapeBySub(subElement) || 'Unbekannt';
           damageType = mainElement === 'Natur' ? 'Nature / Poison' : mainElement;
         }
         const die = ageInfo.elementalDie;
         const count = ddd + 1;
         rollInfo = rollDice(count, die);
-        basis = rollInfo.total + conMod + level + floor(level / 2);
-        avgBasis = count * averageDie(die) + conMod + level + floor(level / 2);
-        formulaText = `roll(${count}d${die}) + KON (${conMod}) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
-        diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
-        if(shape === 'Kegel-Breath'){
-          range = `${Math.min(chargesUsed * 10, 100)} ft`;
-        } else if(shape === 'Strahl-Breath'){
-          range = `${Math.min(chargesUsed * 20, 200)} ft`;
-        } else if(shape === 'Kein Breath'){
-          range = 'N/A';
+        let isPlasmaCore = !isHybrid && subElement === 'Plasma Core';
+        if(isPlasmaCore){
+          const effectiveCharges = Math.min(chargesUsed, 4);
+          const multiplier = 1 + (0.25 * effectiveCharges);
+          basis = (rollInfo.total * multiplier) + level + floor(level / 2);
+          avgBasis = (count * averageDie(die) * multiplier) + level + floor(level / 2);
+          formulaText = `(roll(${count}d${die}) × (1 + (0.25 × ${effectiveCharges}))) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
+          range = '15 ft';
+          notes.push(`Plasma Core: Kugel (Sphere) bewegt sich ${chargesUsed} Runden à 15 ft.`);
         } else {
-          range = '-';
+          // Fallback: ensure we always have a valid Breath shape for Range calculation
+          if(shape === '-' || shape === 'Unbekannt'){
+            shape = getBreathShapeBySub(subElement);
+          }
+          basis = rollInfo.total + level + floor(level / 2);
+          avgBasis = count * averageDie(die) + level + floor(level / 2);
+          formulaText = `roll(${count}d${die}) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
+          if(shape === 'Kegel-Breath'){
+            range = `${Math.min(chargesUsed * 10, 100)} ft`;
+          } else if(shape === 'Strahl-Breath'){
+            range = `${Math.min(chargesUsed * 20, 200)} ft`;
+          } else if(shape === 'Kein Breath'){
+            range = 'N/A';
+          } else {
+            range = '-';
+          }
         }
+        diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
       } else if(attackType === 'No-Breath Spezialattacke'){
         if(isHybrid){
           notes.push('No-Breath Spezialattacke sollte bei Hybriden nur genutzt werden, wenn der DM es erlaubt.');
@@ -1518,9 +1528,9 @@
         }
         const inverted = invertDice(ddd, ageInfo.elementalDie);
         rollInfo = rollDice(inverted.count, inverted.die);
-        basis = rollInfo.total + conMod + level + floor(level / 2);
-        avgBasis = inverted.count * averageDie(inverted.die) + conMod + level + floor(level / 2);
-        formulaText = `roll(${inverted.count}d${inverted.die}) + KON (${conMod}) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
+        basis = rollInfo.total + level + floor(level / 2);
+        avgBasis = inverted.count * averageDie(inverted.die) + level + floor(level / 2);
+        formulaText = `roll(${inverted.count}d${inverted.die}) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
         damageType = isHybrid ? 'Special' : (mainElement === 'Natur' ? 'Nature / Special' : `${mainElement} Special`);
         shape = 'Kein Breath';
         range = 'N/A';
@@ -1542,7 +1552,7 @@
         selectedMutationNames.forEach(name => {
           const mut = relevant[name];
           if(!mut) return;
-          if(mut.type === 'percentBreath' && (attackType === 'Breath Attack' || attackType === 'No-Breath Spezialattacke')){
+          if(mut.type === 'percentBreath' && attackType === 'Breath Attack'){
             percentBonus += mut.value;
           } else if(mut.type === 'percentPhysical' && ['Schlagen / Slash','Bite','Schwanzattacke'].includes(attackType)){
             percentBonus += mut.value;
@@ -1555,8 +1565,13 @@
         });
       }
 
-      const finalDamage = floor((basis + flatBonus) * (1 + percentBonus)) + extraFlatAfter;
-      const avgFinalDamage = floor((avgBasis + flatBonus) * (1 + percentBonus)) + extraFlatAfter;
+      const livingLightningActive = selectedMutationNames.includes('Living Lightning') && attackType === 'Breath Attack';
+      const finalMultiplier = livingLightningActive ? 2 : 1;
+      const finalDamage = floor((basis + flatBonus) * (1 + percentBonus)) * finalMultiplier + extraFlatAfter;
+      const avgFinalDamage = floor((avgBasis + flatBonus) * (1 + percentBonus)) * finalMultiplier + extraFlatAfter;
+      if(livingLightningActive){
+        notes.push('Living Lightning: Finale Schaden ×2');
+      }
 
       const metrics = [
         {label:'Finaler Schaden', value:String(finalDamage)},
@@ -1577,12 +1592,16 @@
         </div>
       `).join('');
 
+      const finalFormulaText = livingLightningActive
+        ? `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt)) × 2 + ExtraFlatAfter`
+        : `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt)) + ExtraFlatAfter`;
+
       qs('#damageFormula').innerHTML = `
-        <div class="notice"><strong>Finale Formel:</strong> floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt)) + ExtraFlatAfter</div>
+        <div class="notice"><strong>Finale Formel:</strong> ${finalFormulaText}</div>
         <div style="margin-top:12px">
           <div><strong>Eingesetzte Basisformel:</strong> ${formulaText}</div>
-          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)})) + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
-          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)})) + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
+          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
+          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
         </div>
         <div style="margin-top:12px">
           <strong>Hinweise / Notizen:</strong>
