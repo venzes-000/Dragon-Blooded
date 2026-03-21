@@ -1408,6 +1408,11 @@
       });
     }
 
+    function loadHistoryEntry(entry) {
+      qs('#damageMetrics').innerHTML = entry.metricsHtml;
+      qs('#damageFormula').innerHTML = entry.formulaHtml;
+    }
+
     function calculateDamage(){
       const dragonKind = qs('#dragonKind').value;
       const attackType = qs('#attackType').value;
@@ -1611,11 +1616,40 @@
 
       const historyEntry = {
         title: `${dragonKind} · ${attackType}`,
-        text: `${age} ${type} · Final ${finalDamage} · Basis ${basis} · ${damageType}${range !== '-' ? ` · ${shape} ${range}` : ''}`
+        text: `${age} ${type} · Final ${finalDamage} · Basis ${basis} · ${damageType}${range !== '-' ? ` · ${shape} ${range}` : ''}`,
+        metricsHtml: metrics.map(m => `
+        <div class="metric">
+          <div class="label">${m.label}</div>
+          <div class="value" style="font-size:${m.label === 'Würfelwurf' ? '15px':'24px'}">${m.value}</div>
+        </div>
+      `).join(''),
+        formulaHtml: `
+        <div class="notice"><strong>Finale Formel:</strong> ${finalFormulaText}</div>
+        <div style="margin-top:12px">
+          <div><strong>Eingesetzte Basisformel:</strong> ${formulaText}</div>
+          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
+          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
+        </div>
+        <div style="margin-top:12px">
+          <strong>Hinweise / Notizen:</strong>
+          <ul>${(notes.length ? notes : ['Keine zusätzlichen Hinweise.']).map(n => `<li>${n}</li>`).join('')}</ul>
+        </div>
+      `
       };
       state.damageHistory.unshift(historyEntry);
       state.damageHistory = state.damageHistory.slice(0, 12);
-      qs('#damageHistory').innerHTML = state.damageHistory.map(item => `<div class="history-item"><strong>${item.title}</strong><br>${item.text}</div>`).join('');
+      qs('#damageHistory').innerHTML = state.damageHistory.map((item, index) => `<div class="history-item" data-index="${index}" style="cursor:pointer;"><strong>${item.title}</strong><br>${item.text}</div>`).join('');
+
+      // Add click listeners to history items
+      qsa('#damageHistory .history-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const index = el.dataset.index;
+          const entry = state.damageHistory[index];
+          if (entry) {
+            loadHistoryEntry(entry);
+          }
+        });
+      });
     }
 
     function calculateCoreStats(){
