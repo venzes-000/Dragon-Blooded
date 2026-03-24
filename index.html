@@ -744,7 +744,7 @@
               </div>
               <div class="card">
                 <h3>No-Breath</h3>
-                <p>Heat, Static Field, Pulse, Thunderclap, Conductor, Wildfang, Bone, Razorleaf, Rootbind</p>
+                <p>Heat, Static Field, Pulse, Thunderclap, Conductor, Bone, Razorleaf, Rootbind, Bioelectric Surge, Energy Flow, Verdant Heal</p>
               </div>
             </div>
           </div>
@@ -788,6 +788,13 @@
                 <select id="dragonKind">
                   <option>Standard-Drache</option>
                   <option>Hybrid-Drache</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="formSelect">Form</label>
+                <select id="formSelect">
+                  <option>Dragon Form</option>
+                  <option>Human Form</option>
                 </select>
               </div>
               <div class="field">
@@ -980,7 +987,7 @@
           resistance: 'Poison / Nature',
           subs: {
             Venom:{theme:'Gift und Verfall', shape:'Kegel-Breath', resistance:'Poison', desc:['Main DPS mit Vergiftung','Breiter Schadensraum','Stark gegen Lightning']},
-            Wildfang:{theme:'Bestialische Gewalt / No-Breath', shape:'Kein Breath', resistance:'Nature', desc:['Kein klassischer Atem','Rohes Nahkampfprofil','Main DPS über Körperkraft']},
+            Preasure:{theme:'Kugel Breath / Supporter', shape:'Kugel-Breath', resistance:'Nature', desc:['Kugelprojektil in gerader Linie','Breite Feldkontrolle','Spezialformel mit Knockback']},
             Bone:{theme:'Knochenhärte / No-Breath', shape:'Kein Breath', resistance:'Nature', desc:['Brutaler physischer Stil','Kein Breath','Massiver Druck']},
             Acid:{theme:'Säure und Zersetzung', shape:'Kegel-Breath', resistance:'Acid / Poison', desc:['Hoher Flächenverschleiß','Main DPS','Ekelhaft effektiv']},
             Sporeburst:{theme:'Sporenexplosion', shape:'Kegel-Breath', resistance:'Poison', desc:['Sub DPS mit Debuff-Flair','Störender Nebel','Zersetzung und Fläche']},
@@ -1018,7 +1025,8 @@
       breathTypes: {
         cone: ['Inferno','Lava','Combustion','Emberstorm','Reignite','Tidal','Glacier','Frostbite','Mistveil','Current Guide','Springwater','Tempest','Venom','Acid','Sporeburst','Lifewaver'],
         beam: ['Solar','Detonation','Flame Ward','Phoenix','Abyss','Jetstream','Arc','Plasma Core'],
-        none: ['Heat','Static Field','Pulse','Thunderclap','Conductor','Wildfang','Bone','Razorleaf','Rootbind','Bioelectric Surge','Energy Flow','Verdant Heal']
+        pressure: ['Preasure'],
+        none: ['Heat','Static Field','Pulse','Thunderclap','Conductor','Bone','Razorleaf','Rootbind','Bioelectric Surge','Energy Flow','Verdant Heal']
       },
       habitats: {
         Fire: { damageBonus: 0.20 },
@@ -1112,6 +1120,7 @@
     function floor(num){ return Math.floor(num); }
     function round1(num){ return Math.round(num*10)/10; }
     function averageDie(die){ return (die + 1) / 2; }
+    function roundUpToNextMultipleOf5(value){ return Math.ceil(value / 5) * 5; }
     function randomInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
     function rollDice(count, die){
       let total = 0;
@@ -1142,6 +1151,7 @@
     function getBreathShapeBySub(subName){
       if(data.breathTypes.cone.includes(subName)) return 'Kegel-Breath';
       if(data.breathTypes.beam.includes(subName)) return 'Strahl-Breath';
+      if(data.breathTypes.pressure && data.breathTypes.pressure.includes(subName)) return 'Kugel-Breath';
       return 'Kein Breath';
     }
     function getTailDie(die){
@@ -1152,8 +1162,17 @@
       return { count: die, die: count };
     }
     function evaluateChargeFormula(formula, level){
+      // Neue Formel: (Lv * 0,1) * (Bonus * 0,1 + 1) + Lv
+      // Rundung: .1-.4 abrunden, .5-.9 aufrunden
       const match = formula.match(/lvl \+ (\d+)/i);
-      return match ? level + Number(match[1]) : level;
+      if(!match){
+        return level;
+      }
+      const bonus = Number(match[1]);
+      const raw = (level * 0.1) * (bonus * 0.1 + 1) + level;
+      const frac = raw - Math.floor(raw);
+      const rounded = frac < 0.5 ? Math.floor(raw) : Math.ceil(raw);
+      return rounded;
     }
 
     function initTabs(){
@@ -1314,13 +1333,15 @@
       const sizeData = data.sizes[role];
       const rows = Object.entries(sizeData).map(([age, info]) => {
         const chargeFormula = data.charges[age][role];
+        const match = String(chargeFormula).match(/lvl \+ (\d+)/i);
+        const bonus = match ? Number(match[1]) : 0;
         return `<tr>
           <td>${age}</td>
           <td>${info.years}</td>
           <td>${info.length} ft</td>
           <td>${info.height}</td>
           <td>${info.wingspan} ft</td>
-          <td>${chargeFormula}</td>
+          <td>${bonus}</td>
         </tr>`;
       }).join('');
       box.innerHTML = `
@@ -1387,15 +1408,42 @@
       });
     }
 
+    function updateFormConstraints(){
+      const form = qs('#formSelect').value;
+      const attackType = qs('#attackType');
+      Array.from(attackType.options).forEach(opt => {
+        if(form === 'Human Form'){
+          opt.disabled = !(opt.value === 'Breath Attack' || opt.value === 'No-Breath Spezialattacke');
+        } else {
+          opt.disabled = false;
+        }
+      });
+      if(form === 'Human Form' && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType.value)){
+        attackType.value = 'Breath Attack';
+      }
+
+      // Preasure benötigt kein manuelles X; Range wird rein anhand Charges berechnet.
+      // Intentionally no visibility toggles needed.
+      return;
+    }
+
     function bindCalculatorEvents(){
       qs('#mainElementSelect').addEventListener('change', () => {
         updateSubElementSelect();
+        updateFormConstraints();
+      });
+      qs('#subElementSelect').addEventListener('change', () => {
+        updateFormConstraints();
+      });
+      qs('#formSelect').addEventListener('change', () => {
+        updateFormConstraints();
       });
 
       qs('#dragonKind').addEventListener('change', () => {
         const hybrid = qs('#dragonKind').value === 'Hybrid-Drache';
         qsa('.standard-only').forEach(el => el.classList.toggle('hide', hybrid));
         qsa('.hybrid-only').forEach(el => el.classList.toggle('hide', !hybrid));
+        updateFormConstraints();
       });
 
       qs('#calcDamageBtn').addEventListener('click', calculateDamage);
@@ -1415,6 +1463,7 @@
 
     function calculateDamage(){
       const dragonKind = qs('#dragonKind').value;
+      const form = qs('#formSelect').value;
       const attackType = qs('#attackType').value;
       const age = qs('#ageSelect').value;
       const type = qs('#typeSelect').value;
@@ -1447,6 +1496,11 @@
       let rollInfo;
 
       const isHybrid = dragonKind === 'Hybrid-Drache';
+      const isHumanForm = form === 'Human Form';
+      const isPreasure = !isHybrid && subElement === 'Preasure';
+      if(isHumanForm && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType)){
+        notes.push('Human Form erlaubt nur Breath Attack oder No-Breath Spezialattacke. Berechnung wird eingeschränkt.');
+      }
       let usedMainForHabitat = mainElement;
       let usedSub = subElement;
       if(isHybrid){
@@ -1466,18 +1520,24 @@
         const die = ageInfo.physicalDie;
         const count = ddd;
         rollInfo = rollDice(count, die);
-        basis = rollInfo.total + strMod + floor(level / 2);
-        avgBasis = count * averageDie(die) + strMod + floor(level / 2);
-        formulaText = `roll(${count}d${die}) + STR (${strMod}) + floor(Level/2) (${floor(level/2)})`;
+        const baseRoll = rollInfo.total;
+        const levelBonus = level + (level / 2);
+        const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
+        basis = halfRoll + levelBonus + strMod;
+        avgBasis = (level >= 8 ? count * averageDie(die) : (count * averageDie(die)) / 2) + levelBonus + strMod;
+        formulaText = `((roll(${count}d${die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}) + STR (${strMod}))`;
         damageType = physicalDamageTypeMap[attackType];
         diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
       } else if(attackType === 'Schwanzattacke'){
         const die = getTailDie(ageInfo.physicalDie);
         const count = ddd;
         rollInfo = rollDice(count, die);
-        basis = rollInfo.total + strMod + floor(level / 2);
-        avgBasis = count * averageDie(die) + strMod + floor(level / 2);
-        formulaText = `roll(${count}d${die}) + STR (${strMod}) + floor(Level/2) (${floor(level/2)})`;
+        const baseRoll = rollInfo.total;
+        const levelBonus = level + (level / 2);
+        const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
+        basis = halfRoll + levelBonus + strMod;
+        avgBasis = (level >= 8 ? count * averageDie(die) : (count * averageDie(die)) / 2) + levelBonus + strMod;
+        formulaText = `((roll(${count}d${die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}) + STR (${strMod}))`;
         damageType = 'Bludgeoning';
         diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
       } else if(attackType === 'Breath Attack'){
@@ -1493,15 +1553,18 @@
           damageType = mainElement === 'Natur' ? 'Nature / Poison' : mainElement;
         }
         const die = ageInfo.elementalDie;
-        const count = ddd + 1;
+        const count = ddd;
         rollInfo = rollDice(count, die);
         let isPlasmaCore = !isHybrid && subElement === 'Plasma Core';
         if(isPlasmaCore){
           const effectiveCharges = Math.min(chargesUsed, 4);
           const multiplier = 1 + (0.25 * effectiveCharges);
-          basis = (rollInfo.total * multiplier) + level + floor(level / 2);
-          avgBasis = (count * averageDie(die) * multiplier) + level + floor(level / 2);
-          formulaText = `(roll(${count}d${die}) × (1 + (0.25 × ${effectiveCharges}))) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
+          const baseRoll = rollInfo.total * multiplier;
+          const levelBonus = level + (level / 2);
+          const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
+          basis = halfRoll + levelBonus;
+          avgBasis = (level >= 8 ? count * averageDie(die) * multiplier : (count * averageDie(die) * multiplier) / 2) + levelBonus;
+          formulaText = `((roll(${count}d${die}) × (1 + (0.25 × ${effectiveCharges})) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}))`;
           range = '15 ft';
           notes.push(`Plasma Core: Kugel (Sphere) bewegt sich ${chargesUsed} Runden à 15 ft.`);
         } else {
@@ -1509,13 +1572,24 @@
           if(shape === '-' || shape === 'Unbekannt'){
             shape = getBreathShapeBySub(subElement);
           }
-          basis = rollInfo.total + level + floor(level / 2);
-          avgBasis = count * averageDie(die) + level + floor(level / 2);
-          formulaText = `roll(${count}d${die}) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
+          const baseRoll = rollInfo.total;
+          const levelBonus = level + (level / 2);
+          const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
+          basis = halfRoll + levelBonus;
+          avgBasis = (level >= 8 ? count * averageDie(die) : (count * averageDie(die)) / 2) + levelBonus;
+          formulaText = `((roll(${count}d${die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}))`;
           if(shape === 'Kegel-Breath'){
             range = `${Math.min(chargesUsed * 10, 100)} ft`;
           } else if(shape === 'Strahl-Breath'){
             range = `${Math.min(chargesUsed * 20, 200)} ft`;
+          } else if(shape === 'Kugel-Breath'){
+            const totalDistance = isHumanForm ? (chargesUsed / 2) * 15 : chargesUsed * 15;
+            const x = totalDistance;
+            const y = 0;
+            const knockbackRaw = x / 2 + y;
+            const knockback = roundUpToNextMultipleOf5(knockbackRaw);
+            range = `${totalDistance} ft`;
+            notes.push(`Preasure Reichweite: ${totalDistance} ft, Knockback: raw ${knockbackRaw.toFixed(2)} → ${knockback} ft`);
           } else if(shape === 'Kein Breath'){
             range = 'N/A';
           } else {
@@ -1527,19 +1601,36 @@
         if(isHybrid){
           notes.push('No-Breath Spezialattacke sollte bei Hybriden nur genutzt werden, wenn der DM es erlaubt.');
         }
-        const allowedNoBreath = ['Heat','Static Field','Pulse','Thunderclap','Conductor','Wildfang','Bone','Razorleaf','Rootbind'];
+        const allowedNoBreath = ['Heat','Static Field','Pulse','Thunderclap','Conductor','Bone','Razorleaf','Rootbind'];
         if(!isHybrid && !allowedNoBreath.includes(subElement)){
           notes.push('Gewähltes Sub-Element ist eigentlich kein erlaubter No-Breath-Drache.');
         }
         const inverted = invertDice(ddd, ageInfo.elementalDie);
         rollInfo = rollDice(inverted.count, inverted.die);
-        basis = rollInfo.total + level + floor(level / 2);
-        avgBasis = inverted.count * averageDie(inverted.die) + level + floor(level / 2);
-        formulaText = `roll(${inverted.count}d${inverted.die}) + Level (${level}) + floor(Level/2) (${floor(level/2)})`;
+        const baseRoll = rollInfo.total;
+        const levelBonus = level + (level / 2);
+        const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
+        basis = halfRoll + levelBonus;
+        avgBasis = (level >= 8 ? inverted.count * averageDie(inverted.die) : (inverted.count * averageDie(inverted.die)) / 2) + levelBonus;
+        formulaText = `((roll(${inverted.count}d${inverted.die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}))`;
         damageType = isHybrid ? 'Special' : (mainElement === 'Natur' ? 'Nature / Special' : `${mainElement} Special`);
         shape = 'Kein Breath';
         range = 'N/A';
         diceDisplay = `${inverted.count}d${inverted.die} → [${rollInfo.rolls.join(', ')}]`;
+      }
+
+      if(isHumanForm && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType)){
+        basis = 0;
+        avgBasis = 0;
+        diceDisplay = '-';
+        shape = '-';
+        range = '-';
+        damageType = 'Human Form restrict';
+        notes.push('Human Form kann keine physischen Angriffstypen ausführen.');
+      }
+
+      if(isHybrid){
+        // Keine Habitatsvorteile bei Hybriden
       }
 
       if(!isHybrid && habitatActive && (attackType === 'Breath Attack' || attackType === 'No-Breath Spezialattacke')){
@@ -1572,8 +1663,16 @@
 
       const livingLightningActive = selectedMutationNames.includes('Living Lightning') && attackType === 'Breath Attack';
       const finalMultiplier = livingLightningActive ? 2 : 1;
-      const finalDamage = floor((basis + flatBonus) * (1 + percentBonus)) * finalMultiplier + extraFlatAfter;
-      const avgFinalDamage = floor((avgBasis + flatBonus) * (1 + percentBonus)) * finalMultiplier + extraFlatAfter;
+      let formDamageFactor = 1;
+      if(isPreasure){
+        formDamageFactor = isHumanForm ? 0.25 : 0.5;
+        notes.push(`Preasure Effekt: ${isHumanForm ? 'Human Form Damage /4 (normal /2 + human /2)' : 'Dragon Form Damage /2'}.`);
+      } else if(isHumanForm){
+        formDamageFactor = 0.5;
+        notes.push('Human Form Effekt: Breath/No-Breath Schaden /2.');
+      }
+      const finalDamage = floor((basis + flatBonus) * (1 + percentBonus) * formDamageFactor) * finalMultiplier + extraFlatAfter;
+      const avgFinalDamage = floor((avgBasis + flatBonus) * (1 + percentBonus) * formDamageFactor) * finalMultiplier + extraFlatAfter;
       if(livingLightningActive){
         notes.push('Living Lightning: Finale Schaden ×2');
       }
@@ -1587,7 +1686,8 @@
         {label:'Mutations-Bonus', value:`+${Math.round(percentBonus*100)}% gesamt`},
         {label:'Habitat-Bonus', value: habitatActive && !isHybrid ? (usedMainForHabitat === 'Water' ? '0% (Water special)' : `${Math.round((data.habitats[usedMainForHabitat]?.damageBonus || 0) * 100)}%`) : '0%'},
         {label:'Shape', value:shape},
-        {label:'Range', value:range}
+        {label:'Range', value:range},
+        {label:'Form', value: form}
       ];
 
       qs('#damageMetrics').innerHTML = metrics.map(m => `
@@ -1598,15 +1698,15 @@
       `).join('');
 
       const finalFormulaText = livingLightningActive
-        ? `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt)) × 2 + ExtraFlatAfter`
-        : `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt)) + ExtraFlatAfter`;
+        ? `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt) × ${formDamageFactor}) × 2 + ExtraFlatAfter`
+        : `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt) × ${formDamageFactor}) + ExtraFlatAfter`;
 
       qs('#damageFormula').innerHTML = `
         <div class="notice"><strong>Finale Formel:</strong> ${finalFormulaText}</div>
         <div style="margin-top:12px">
           <div><strong>Eingesetzte Basisformel:</strong> ${formulaText}</div>
-          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
-          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
+          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
+          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
         </div>
         <div style="margin-top:12px">
           <strong>Hinweise / Notizen:</strong>
@@ -1627,8 +1727,8 @@
         <div class="notice"><strong>Finale Formel:</strong> ${finalFormulaText}</div>
         <div style="margin-top:12px">
           <div><strong>Eingesetzte Basisformel:</strong> ${formulaText}</div>
-          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
-          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}))${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
+          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
+          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
         </div>
         <div style="margin-top:12px">
           <strong>Hinweise / Notizen:</strong>
@@ -1660,7 +1760,6 @@
       const ageInfo = data.ages[age];
       const sizeInfo = data.sizes[type][age];
       const chargeFormula = data.charges[age][type];
-      const charges = evaluateChargeFormula(chargeFormula, level);
 
       let hpDiceCount = 0;
       if(type === 'Attacker') hpDiceCount = 3 * level;
@@ -1691,9 +1790,12 @@
         flySpeed = sizeInfo.wingspan * 2.5;
       }
 
+      const chargeBonus = Number((chargeFormula.match(/lvl \+ (\d+)/i) || [0,0])[1]);
+      const charges = evaluateChargeFormula(chargeFormula, level);
       const metrics = [
         {label:'HP', value:String(hp)},
-        {label:'Charges', value:String(charges)},
+        {label:'Charges (berechnet)', value:String(charges)},
+        {label:'Charges (Bonus)', value:String(chargeBonus)},
         {label:'Laufgeschwindigkeit', value:`${round1(runSpeed)} ft`},
         {label:'Fluggeschwindigkeit', value:`${round1(flySpeed)} ft`},
         {label:'Typ-Stats', value:data.typeStats[type]},
@@ -1711,7 +1813,8 @@
         <h3 style="margin-top:0">Details</h3>
         <div class="stat-list">
           <div class="stat-line"><div class="stat-name">HP-Formel</div><div>${type === 'Attacker' ? '(3 × lvl)d Alterswürfel' : type === 'Tanker' ? '(4 × lvl)d Alterswürfel' : '(2 × lvl)d Alterswürfel'} → ${hpDetail}</div></div>
-          <div class="stat-line"><div class="stat-name">Charges</div><div>${chargeFormula} → ${charges}</div></div>
+          <div class="stat-line"><div class="stat-name">Charges (berechnet)</div><div>${charges}</div></div>
+        <div class="stat-line"><div class="stat-name">Charges Bonus</div><div>${chargeBonus} (aus ${chargeFormula})</div></div>
           <div class="stat-line"><div class="stat-name">Körpermaße</div><div>${sizeInfo.length} ft Länge / ${sizeInfo.height} Höhe / ${sizeInfo.wingspan} ft Flügelspannweite</div></div>
           <div class="stat-line"><div class="stat-name">Typ-Stats</div><div>${data.typeStats[type]}</div></div>
         </div>
@@ -1767,6 +1870,7 @@
       renderGrowthDisplay();
       populateBasicSelects();
       bindCalculatorEvents();
+      updateFormConstraints();
       calculateDamage();
       calculateCoreStats();
       calculateScaleHelper();
