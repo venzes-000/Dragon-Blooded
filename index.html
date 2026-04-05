@@ -1481,7 +1481,13 @@
       }
 
       const ageInfo = data.ages[age];
-      const ddd = data.ddd[type];
+      const getModifiedDie = (baseDie, dragonType) => {
+        let modifier = 0;
+        if(dragonType === 'Sprinter') modifier = 0;
+        else if(dragonType === 'Attacker') modifier = 2;
+        else if(dragonType === 'Tanker') modifier = -2;
+        return Math.max(1, baseDie + modifier);
+      };
       let basis = 0;
       let avgBasis = 0;
       let formulaText = '';
@@ -1517,8 +1523,8 @@
       };
 
       if(attackType === 'Schlagen / Slash' || attackType === 'Bite'){
-        const die = ageInfo.physicalDie;
-        const count = ddd;
+        const die = getModifiedDie(ageInfo.physicalDie, type);
+        const count = 3;
         rollInfo = rollDice(count, die);
         const baseRoll = rollInfo.total;
         const levelBonus = level + (level / 2);
@@ -1529,8 +1535,8 @@
         damageType = physicalDamageTypeMap[attackType];
         diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
       } else if(attackType === 'Schwanzattacke'){
-        const die = getTailDie(ageInfo.physicalDie);
-        const count = ddd;
+        const die = getModifiedDie(getTailDie(ageInfo.physicalDie), type);
+        const count = 3;
         rollInfo = rollDice(count, die);
         const baseRoll = rollInfo.total;
         const levelBonus = level + (level / 2);
@@ -1552,19 +1558,33 @@
           shape = subInfo?.shape || getBreathShapeBySub(subElement) || 'Unbekannt';
           damageType = mainElement === 'Natur' ? 'Nature / Poison' : mainElement;
         }
-        const die = ageInfo.elementalDie;
-        const count = ddd;
+        let die = getModifiedDie(ageInfo.elementalDie, type);
+        let count;
+        let countExact;
+        let divisor = isHumanForm ? 4 : 2.5;
+        let multiplier = 1;
+        let levelPart = level * (level / 2);
+        let isPlasma = !isHybrid && subElement === 'Plasma Core' && mainElement === 'Lightning';
+        let isPressure = !isHybrid && subElement === 'Preasure' && mainElement === 'Natur';
+        if(isPlasma){
+          countExact = 3 + level / 4;
+          count = Math.floor(countExact);
+          multiplier = 1 + (0.25 * Math.min(chargesUsed, 4));
+        } else if(isPressure){
+          countExact = level / 4 + 3;
+          count = Math.floor(countExact);
+          divisor = isHumanForm ? 5 : 3;
+          levelPart = level * (level / 3);
+        } else {
+          count = 3;
+          countExact = 3;
+        }
         rollInfo = rollDice(count, die);
-        let isPlasmaCore = !isHybrid && subElement === 'Plasma Core';
-        if(isPlasmaCore){
-          const effectiveCharges = Math.min(chargesUsed, 4);
-          const multiplier = 1 + (0.25 * effectiveCharges);
-          const baseRoll = rollInfo.total * multiplier;
-          const levelBonus = level + (level / 2);
-          const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
-          basis = halfRoll + levelBonus;
-          avgBasis = (level >= 8 ? count * averageDie(die) * multiplier : (count * averageDie(die) * multiplier) / 2) + levelBonus;
-          formulaText = `((roll(${count}d${die}) × (1 + (0.25 × ${effectiveCharges})) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}))`;
+        let baseRoll = rollInfo.total;
+        basis = (baseRoll / divisor) + levelPart * multiplier;
+        avgBasis = (countExact * averageDie(die) / divisor) + levelPart * multiplier;
+        formulaText = `((roll(${count}d${die}) / ${divisor}) + (Level × ${isPressure ? '(Level / 3)' : '(Level / 2)'}) (${levelPart.toFixed(1)}) ${multiplier !== 1 ? `× ${multiplier.toFixed(2)}` : ''})`;
+        if(isPlasma){
           range = '15 ft';
           notes.push(`Plasma Core: Kugel (Sphere) bewegt sich ${chargesUsed} Runden à 15 ft.`);
         } else {
@@ -1572,12 +1592,6 @@
           if(shape === '-' || shape === 'Unbekannt'){
             shape = getBreathShapeBySub(subElement);
           }
-          const baseRoll = rollInfo.total;
-          const levelBonus = level + (level / 2);
-          const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
-          basis = halfRoll + levelBonus;
-          avgBasis = (level >= 8 ? count * averageDie(die) : (count * averageDie(die)) / 2) + levelBonus;
-          formulaText = `((roll(${count}d${die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}))`;
           if(shape === 'Kegel-Breath'){
             range = `${Math.min(chargesUsed * 10, 100)} ft`;
           } else if(shape === 'Strahl-Breath'){
@@ -1605,18 +1619,19 @@
         if(!isHybrid && !allowedNoBreath.includes(subElement)){
           notes.push('Gewähltes Sub-Element ist eigentlich kein erlaubter No-Breath-Drache.');
         }
-        const inverted = invertDice(ddd, ageInfo.elementalDie);
-        rollInfo = rollDice(inverted.count, inverted.die);
-        const baseRoll = rollInfo.total;
-        const levelBonus = level + (level / 2);
-        const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
-        basis = halfRoll + levelBonus;
-        avgBasis = (level >= 8 ? inverted.count * averageDie(inverted.die) : (inverted.count * averageDie(inverted.die)) / 2) + levelBonus;
-        formulaText = `((roll(${inverted.count}d${inverted.die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}))`;
+        let divisor = isHumanForm ? 4 : 2.5;
+        let count = getModifiedDie(ageInfo.elementalDie, type); // AW
+        let die = Math.floor(3 + level / 4);
+        rollInfo = rollDice(count, die);
+        let baseRoll = rollInfo.total;
+        let levelPart = level * (level / 2);
+        basis = (baseRoll / divisor) + levelPart;
+        avgBasis = (count * averageDie(die) / divisor) + levelPart;
+        formulaText = `((roll(${count}d${die}) / ${divisor}) + (Level × (Level / 2)) (${levelPart.toFixed(1)}))`;
         damageType = isHybrid ? 'Special' : (mainElement === 'Natur' ? 'Nature / Special' : `${mainElement} Special`);
         shape = 'Kein Breath';
         range = 'N/A';
-        diceDisplay = `${inverted.count}d${inverted.die} → [${rollInfo.rolls.join(', ')}]`;
+        diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
       }
 
       if(isHumanForm && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType)){
@@ -1664,12 +1679,9 @@
       const livingLightningActive = selectedMutationNames.includes('Living Lightning') && attackType === 'Breath Attack';
       const finalMultiplier = livingLightningActive ? 2 : 1;
       let formDamageFactor = 1;
-      if(isPreasure){
-        formDamageFactor = isHumanForm ? 0.25 : 0.5;
-        notes.push(`Preasure Effekt: ${isHumanForm ? 'Human Form Damage /4 (normal /2 + human /2)' : 'Dragon Form Damage /2'}.`);
-      } else if(isHumanForm){
+      if(isHumanForm && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType)){
         formDamageFactor = 0.5;
-        notes.push('Human Form Effekt: Breath/No-Breath Schaden /2.');
+        notes.push('Human Form Effekt: Physischer Schaden /2.');
       }
       const finalDamage = floor((basis + flatBonus) * (1 + percentBonus) * formDamageFactor) * finalMultiplier + extraFlatAfter;
       const avgFinalDamage = floor((avgBasis + flatBonus) * (1 + percentBonus) * formDamageFactor) * finalMultiplier + extraFlatAfter;
