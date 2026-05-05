@@ -1,1894 +1,1251 @@
-<!DOCTYPE html>
-<html lang="de">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dragon Blooded — Dragon System Hub</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CBC Ballistics Calculator</title>
   <style>
-    :root{
-      --bg:#07101a;
-      --bg2:#0a1422;
-      --panel:#0e1a2d;
-      --panel2:#12223b;
-      --line:#27466f;
-      --line2:#35639d;
-      --text:#eef5ff;
-      --muted:#9fb8df;
-      --blue:#6cc0ff;
-      --blue2:#3b95ff;
-      --blue3:#7dd2ff;
-      --good:#90e5a2;
-      --warn:#ffd479;
-      --bad:#ff9b9b;
-      --shadow:0 18px 50px rgba(0,0,0,.35);
-      --glow:0 0 0 1px rgba(108,192,255,.15), 0 0 30px rgba(59,149,255,.08);
-      --radius:22px;
-      --radius-sm:14px;
+    :root {
+      color-scheme: dark;
+      --bg: #11161c;
+      --surface: #171f27;
+      --surface-2: #1e2933;
+      --line: #354454;
+      --muted: #9caeba;
+      --text: #edf4f6;
+      --accent: #65d6b5;
+      --accent-2: #e6bc62;
+      --danger: #ff7c7c;
+      --ok: #8de17f;
+      --shadow: rgba(0, 0, 0, 0.28);
     }
 
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      font-family:Inter,Segoe UI,Arial,sans-serif;
-      color:var(--text);
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
       background:
-        radial-gradient(circle at top left, rgba(59,149,255,.16), transparent 28%),
-        radial-gradient(circle at top right, rgba(108,192,255,.09), transparent 22%),
-        linear-gradient(135deg, var(--bg), var(--bg2));
-      min-height:100vh;
-      line-height:1.45;
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 240px),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
     }
 
-    .shell{
-      max-width:1360px;
-      margin:0 auto;
-      padding:24px;
+    button,
+    input,
+    select {
+      font: inherit;
     }
 
-    .hero{
-      background:linear-gradient(180deg, rgba(18,34,59,.92), rgba(9,18,32,.96));
-      border:1px solid var(--line);
-      border-radius:30px;
-      box-shadow:var(--shadow), var(--glow);
-      padding:28px;
-      margin-bottom:18px;
-      overflow:hidden;
-      position:relative;
+    .app {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 24px;
     }
 
-    .hero::before{
-      content:"";
-      position:absolute;
-      inset:auto -120px -120px auto;
-      width:320px;
-      height:320px;
-      background:radial-gradient(circle, rgba(108,192,255,.18), transparent 60%);
-      pointer-events:none;
+    .topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
     }
 
-    h1{
-      margin:0 0 8px;
-      font-size:clamp(34px,5vw,58px);
-      line-height:1;
-      letter-spacing:-1.4px;
-      font-weight:900;
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 780;
     }
 
-    .subtitle{
-      color:var(--muted);
-      max-width:1050px;
-      font-size:16px;
-      margin:0;
+    .subtitle {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
-    .tabs,.subtabs,.button-row,.choice-row,.role-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .tabs{margin:18px 0 0}
-    .subtabs,.button-row,.choice-row,.role-row{margin:0 0 16px}
-
-    button, select, input{
-      font:inherit;
+    .button {
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--text);
+      min-height: 38px;
+      padding: 0 13px;
+      border-radius: 7px;
+      cursor: pointer;
     }
 
-    .tab-btn,.subtab-btn,.chip-btn,.role-btn,.choice-btn,.calc-btn{
-      border:none;
-      color:var(--text);
-      background:linear-gradient(180deg, #182844, #101b2f);
-      border:1px solid #28486f;
-      box-shadow:var(--glow);
-      border-radius:16px;
-      padding:12px 16px;
-      cursor:pointer;
-      transition:.18s ease;
+    .button:hover {
+      border-color: var(--accent);
     }
 
-    .tab-btn{
-      font-weight:800;
-      min-width:150px;
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
     }
 
-    .subtab-btn,.chip-btn,.role-btn,.choice-btn{
-      font-weight:700;
-      padding:10px 13px;
-      border-radius:12px;
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 48px var(--shadow);
+      overflow: hidden;
     }
 
-    .tab-btn:hover,.subtab-btn:hover,.chip-btn:hover,.role-btn:hover,.choice-btn:hover,.calc-btn:hover{
-      transform:translateY(-1px);
-      border-color:var(--line2);
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 48px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
     }
 
-    .active-btn{
-      background:linear-gradient(180deg, var(--blue3), var(--blue2));
-      color:#04101d;
-      border-color:transparent !important;
+    .panel-title {
+      font-size: 14px;
+      font-weight: 740;
+      color: var(--text);
     }
 
-    .tab-pane,.subtab-pane{
-      display:none;
-      margin-top:18px;
+    .status {
+      min-height: 26px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
     }
 
-    .tab-pane.active,.subtab-pane.active{
-      display:block;
+    .status.ok {
+      color: var(--ok);
+      border-color: rgba(141, 225, 127, 0.45);
     }
 
-    .grid-2,.grid-3,.grid-main,.hybrid-grid{
-      display:grid;
-      gap:16px;
+    .status.bad {
+      color: var(--danger);
+      border-color: rgba(255, 124, 124, 0.45);
     }
 
-    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .grid-main{grid-template-columns:1.2fr .9fr}
-    .hybrid-grid{grid-template-columns:320px 1fr}
-
-    .card{
-      background:linear-gradient(180deg, rgba(15,27,46,.95), rgba(10,18,31,.98));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow), var(--glow);
-      padding:22px;
-      min-width:0;
+    .form {
+      padding: 16px;
+      display: grid;
+      gap: 16px;
     }
 
-    .card h2,.card h3,.card h4{
-      margin-top:0;
+    .fieldset {
+      display: grid;
+      gap: 10px;
     }
 
-    .section-title{
-      margin:0 0 14px;
-      font-size:30px;
-      letter-spacing:-.4px;
+    .legend {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 760;
     }
 
-    .muted{color:var(--muted)}
-    .small{font-size:13px;color:var(--muted)}
-    .tiny{font-size:12px;color:var(--muted)}
-
-    .pill-wrap{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin:8px 0 12px;
+    .coords {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
     }
 
-    .pill{
-      border:1px solid #31598c;
-      background:#132744;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      color:#ddecff;
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
 
-    .stat-list{
-      display:grid;
-      gap:10px;
+    label {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
     }
 
-    .stat-line{
-      display:grid;
-      grid-template-columns:160px 1fr;
-      gap:16px;
-      border-top:1px solid rgba(39,70,111,.6);
-      padding-top:12px;
+    .label-text {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
     }
 
-    .stat-line:first-child{
-      border-top:none;
-      padding-top:0;
+    input,
+    select {
+      width: 100%;
+      min-height: 39px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: #0f151b;
+      color: var(--text);
+      padding: 0 10px;
+      outline: none;
     }
 
-    .stat-name{
-      font-weight:800;
-      color:#fff;
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(101, 214, 181, 0.12);
     }
 
-    ul{
-      margin:8px 0 0 18px;
-      padding:0;
+    .checkrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 34px;
     }
 
-    li{margin:6px 0}
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      overflow:hidden;
-      border-radius:16px;
-      border:1px solid rgba(49,89,140,.8);
-      background:rgba(12,22,37,.6);
+    .checkrow input {
+      width: 17px;
+      height: 17px;
+      min-height: 17px;
+      accent-color: var(--accent);
     }
 
-    th,td{
-      padding:12px 10px;
-      border-bottom:1px solid rgba(49,89,140,.35);
-      text-align:left;
-      vertical-align:top;
-      font-size:14px;
+    .results {
+      display: grid;
+      gap: 18px;
     }
 
-    th{
-      background:#12233c;
-      color:#fff;
-      font-size:13px;
-      letter-spacing:.2px;
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
     }
 
-    tr:last-child td{border-bottom:none}
-
-    .list-stack{
-      display:grid;
-      gap:10px;
-      max-height:640px;
-      overflow:auto;
-      padding-right:4px;
+    .metric {
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.025);
+      padding: 12px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
     }
 
-    .list-item{
-      background:#12233b;
-      border:1px solid #2a4b75;
-      border-radius:14px;
-      padding:12px;
-      cursor:pointer;
-      transition:.18s ease;
+    .metric.wide {
+      grid-column: 1 / -1;
     }
 
-    .list-item:hover{border-color:#4a84ca; transform:translateY(-1px)}
-    .list-item.active{background:linear-gradient(180deg, var(--blue3), var(--blue2)); color:#04101d; border-color:transparent}
-    .list-item strong{display:block;font-size:15px}
-    .list-item span{display:block;font-size:12px;opacity:.88;margin-top:4px}
-
-    .detail-box{
-      min-height:280px;
+    .metric-name {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .detail-box h3{
-      font-size:28px;
-      margin-bottom:6px;
+    .metric-value {
+      font-size: 24px;
+      line-height: 1.05;
+      font-weight: 780;
+      overflow-wrap: anywhere;
     }
 
-    .detail-meta{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin:6px 0 14px;
+    .metric-value.small {
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 680;
+      color: var(--text);
     }
 
-    .detail-meta .pill{font-size:12px}
-
-    .timeline{
-      display:grid;
-      gap:14px;
+    .arcs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 0 16px 16px;
     }
 
-    .timeline-item{
-      border-left:3px solid var(--blue2);
-      padding:14px 16px;
-      background:linear-gradient(180deg, rgba(16,31,54,.92), rgba(10,18,31,.98));
-      border-radius:0 18px 18px 0;
-      border-top:1px solid rgba(53,99,157,.35);
-      border-right:1px solid rgba(53,99,157,.35);
-      border-bottom:1px solid rgba(53,99,157,.35);
+    .arc {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #10171d;
+      overflow: hidden;
     }
 
-    .timeline-item h3{margin:0 0 8px}
-
-    .tag-good{color:var(--good)}
-    .tag-warn{color:var(--warn)}
-    .tag-bad{color:var(--bad)}
-
-    .form-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:14px;
+    .arc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
     }
 
-    .field{
-      display:grid;
-      gap:7px;
+    .arc-name {
+      font-weight: 760;
+      font-size: 13px;
     }
 
-    .field label{
-      font-size:13px;
-      color:#dcecff;
-      font-weight:700;
+    .arc.low .arc-name {
+      color: var(--accent);
     }
 
-    input,select{
-      width:100%;
-      background:#0d1728;
-      color:var(--text);
-      border:1px solid #2b4d78;
-      border-radius:12px;
-      padding:12px 12px;
-      outline:none;
+    .arc.high .arc-name {
+      color: var(--accent-2);
     }
 
-    input:focus,select:focus{
-      border-color:var(--blue2);
-      box-shadow:0 0 0 3px rgba(59,149,255,.12);
+    .arc-body {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
     }
 
-    .multi-select{
-      display:grid;
-      gap:8px;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      background:#0d1728;
-      border:1px solid #2b4d78;
-      border-radius:14px;
-      padding:12px;
-      max-height:220px;
-      overflow:auto;
+    .arc-cell {
+      background: #10171d;
+      padding: 11px;
+      min-height: 68px;
     }
 
-    .check{
-      display:flex;
-      gap:8px;
-      align-items:flex-start;
-      font-size:13px;
-      color:#e7f3ff;
+    .arc-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 7px;
     }
 
-    .check input{
-      width:auto;
-      margin-top:2px;
-      accent-color:#6cc0ff;
+    .arc-number {
+      font-size: 18px;
+      font-weight: 780;
     }
 
-    .result-box{
-      display:grid;
-      gap:12px;
+    .canvas-wrap {
+      padding: 16px;
     }
 
-    .result-grid{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:12px;
+    canvas {
+      width: 100%;
+      height: 420px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0c1116;
     }
 
-    .metric{
-      background:#11223a;
-      border:1px solid #2b4d78;
-      border-radius:16px;
-      padding:14px;
+    .note {
+      padding: 0 16px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
     }
 
-    .metric .label{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
+    .warning {
+      color: var(--danger);
     }
 
-    .metric .value{
-      font-size:24px;
-      font-weight:900;
-      letter-spacing:-.4px;
-    }
-
-    .history-list{
-      display:grid;
-      gap:10px;
-      max-height:250px;
-      overflow:auto;
-    }
-
-    .history-item{
-      background:#102038;
-      border:1px solid #294b75;
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:13px;
-    }
-
-    .notice{
-      border-left:4px solid var(--blue2);
-      background:#102038;
-      border-radius:14px;
-      padding:12px 14px;
-      color:#dcebff;
-    }
-
-    .mut-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:16px;
-    }
-
-    .footer-note{
-      margin-top:18px;
-      color:var(--muted);
-      font-size:13px;
-      text-align:center;
-    }
-
-    .hide{display:none !important}
-
-    @media (max-width:1100px){
-      .grid-main,.hybrid-grid,.grid-2,.grid-3,.mut-grid,.result-grid,.form-grid{
-        grid-template-columns:1fr;
+    @media (max-width: 980px) {
+      .app {
+        padding: 16px;
       }
-      .stat-line{
-        grid-template-columns:1fr;
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
       }
     }
 
-    @media (max-width:700px){
-      .shell{padding:14px}
-      .hero{padding:18px}
-      .tab-btn{min-width:unset; flex:1 1 100%}
-      .multi-select{grid-template-columns:1fr}
-      th,td{font-size:13px;padding:10px 8px}
+    @media (max-width: 620px) {
+      .coords,
+      .two-col,
+      .result-grid,
+      .arcs {
+        grid-template-columns: 1fr;
+      }
+
+      .metric.wide {
+        grid-column: auto;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      canvas {
+        height: 340px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <section class="hero">
-      <h1>Dragon Blooded</h1>
-      <p class="subtitle">Eine vollständige, moderne Ein-Datei-Webseite für die Dragon Blooded Homebrew-Rasse und den kompletten Dragon System Hub — dunkel, hochwertig, blau akzentuiert und mit funktionierenden Tabs, Detailfeldern und Rechnern.</p>
-      <div class="tabs" id="mainTabs">
-        <button class="tab-btn active-btn" data-tab="overview">Overview</button>
-        <button class="tab-btn" data-tab="traits">Traits</button>
-        <button class="tab-btn" data-tab="elements">Elements &amp; Hybrids</button>
-        <button class="tab-btn" data-tab="progression">Level Progression</button>
-        <button class="tab-btn" data-tab="hub">Dragon System Hub</button>
-        <button class="tab-btn" data-tab="calculators">Calculators</button>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>CBC Ballistics Calculator</h1>
+        <div class="subtitle">Create Big Cannons angle helper for mount coords, target coords, velocity, gravity, and barrel length.</div>
+      </div>
+      <div class="toolbar">
+        <button class="button" id="sampleButton" type="button">Load sample</button>
+        <button class="button" id="copyButton" type="button">Copy result</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Inputs</div>
+          <div class="status" id="status">Ready</div>
+        </div>
+        <form class="form" id="calculatorForm">
+          <div class="fieldset">
+            <div class="legend">Cannon Mount</div>
+            <div class="coords">
+              <label>
+                <span class="label-text">X</span>
+                <input id="mountX" type="number" step="0.01" value="0">
+              </label>
+              <label>
+                <span class="label-text">Y</span>
+                <input id="mountY" type="number" step="0.01" value="64">
+              </label>
+              <label>
+                <span class="label-text">Z</span>
+                <input id="mountZ" type="number" step="0.01" value="0">
+              </label>
+            </div>
+          </div>
+
+          <div class="fieldset">
+            <div class="legend">Impact Target</div>
+            <div class="coords">
+              <label>
+                <span class="label-text">X</span>
+                <input id="targetX" type="number" step="0.01" value="420">
+              </label>
+              <label>
+                <span class="label-text">Y</span>
+                <input id="targetY" type="number" step="0.01" value="70">
+              </label>
+              <label>
+                <span class="label-text">Z</span>
+                <input id="targetZ" type="number" step="0.01" value="260">
+              </label>
+            </div>
+          </div>
+
+          <div class="fieldset">
+            <div class="legend">Shot Settings</div>
+            <div class="two-col">
+              <label>
+                <span class="label-text">Total velocity, m/s</span>
+                <input id="velocity" type="number" step="0.01" min="0.01" value="900">
+              </label>
+              <label>
+                <span class="label-text">Cannon length, blocks</span>
+                <input id="barrelLength" type="number" step="0.01" min="0" value="0">
+              </label>
+            </div>
+            <div class="two-col">
+              <label>
+                <span class="label-text">Barrel axis Y offset</span>
+                <input id="barrelYOffset" type="number" step="0.01" value="2">
+              </label>
+              <label>
+                <span class="label-text">CBC drag</span>
+                <input id="drag" type="number" step="0.001" min="0" value="0.01">
+              </label>
+            </div>
+            <div class="two-col">
+              <label>
+                <span class="label-text">Gravity, blocks/tick^2</span>
+                <input id="gravityTicks" type="number" step="0.001" min="0.001" value="0.05">
+              </label>
+              <label>
+                <span class="label-text">Gravity, m/s^2</span>
+                <input id="gravityMeters" type="number" step="0.01" min="0.01" value="20">
+              </label>
+            </div>
+            <label>
+              <span class="label-text">Preferred arc</span>
+              <select id="preferredArc">
+                <option value="low">Low arc</option>
+                <option value="high">High arc</option>
+              </select>
+            </label>
+            <label class="checkrow">
+              <input id="useBarrelLength" type="checkbox" checked>
+              <span>Use cannon length as muzzle offset</span>
+            </label>
+            <label class="checkrow">
+              <input id="quadraticDrag" type="checkbox">
+              <span>Use quadratic drag</span>
+            </label>
+          </div>
+        </form>
+      </div>
+
+      <div class="results">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Result</div>
+            <div class="status ok" id="resultStatus">Reachable</div>
+          </div>
+          <div class="result-grid">
+            <div class="metric">
+              <div class="metric-name">Mount yaw, clockwise</div>
+              <div class="metric-value" id="yawValue">0.00 deg</div>
+            </div>
+            <div class="metric">
+              <div class="metric-name">Selected mount pitch</div>
+              <div class="metric-value" id="bearingValue">0.00 deg</div>
+            </div>
+            <div class="metric">
+              <div class="metric-name">Horizontal distance</div>
+              <div class="metric-value" id="distanceValue">0.00 m</div>
+            </div>
+            <div class="metric">
+              <div class="metric-name">Height difference</div>
+              <div class="metric-value" id="heightValue">0.00 m</div>
+            </div>
+            <div class="metric wide">
+              <div class="metric-name">Muzzle position after length correction</div>
+              <div class="metric-value small" id="muzzleValue">X 0.00, Y 64.00, Z 0.00</div>
+            </div>
+          </div>
+          <div class="arcs">
+            <div class="arc low">
+              <div class="arc-header">
+                <div class="arc-name">Low Arc</div>
+                <div class="status" id="lowStatus">OK</div>
+              </div>
+              <div class="arc-body">
+                <div class="arc-cell">
+                  <div class="arc-label">Elevation</div>
+                  <div class="arc-number" id="lowElevation">0.00 deg</div>
+                </div>
+                <div class="arc-cell">
+                  <div class="arc-label">Final pitch</div>
+                  <div class="arc-number" id="lowPitch">OK</div>
+                </div>
+                <div class="arc-cell">
+                  <div class="arc-label">Flight time</div>
+                  <div class="arc-number" id="lowTime">0.00 s</div>
+                </div>
+                <div class="arc-cell">
+                  <div class="arc-label">Apex</div>
+                  <div class="arc-number" id="lowApex">0.00 m</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="arc high">
+              <div class="arc-header">
+                <div class="arc-name">High Arc</div>
+                <div class="status" id="highStatus">OK</div>
+              </div>
+              <div class="arc-body">
+                <div class="arc-cell">
+                  <div class="arc-label">Elevation</div>
+                  <div class="arc-number" id="highElevation">0.00 deg</div>
+                </div>
+                <div class="arc-cell">
+                  <div class="arc-label">Final pitch</div>
+                  <div class="arc-number" id="highPitch">OK</div>
+                </div>
+                <div class="arc-cell">
+                  <div class="arc-label">Flight time</div>
+                  <div class="arc-number" id="highTime">0.00 s</div>
+                </div>
+                <div class="arc-cell">
+                  <div class="arc-label">Apex</div>
+                  <div class="arc-number" id="highApex">0.00 m</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note" id="note">CBC solid shot defaults here are gravity 0.05 blocks/tick^2 and drag 0.01. Mount elevation is limited to -30.00 deg through 60.00 deg.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Trajectory Preview</div>
+            <div class="status" id="scaleStatus">Auto scale</div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="trajectory" width="1200" height="520"></canvas>
+          </div>
+        </div>
       </div>
     </section>
-
-    <main>
-      <section class="tab-pane active" id="tab-overview">
-        <div class="grid-2">
-          <div class="card">
-            <h2 class="section-title">Overview</h2>
-            <p>Dragon Blooded sind keine normalen Dragonborn. In ihrem Blut liegt gespeicherte drakonische Arkana, die sich nicht nur in roher Elementarkraft, sondern auch in einem ausgeprägten Spellcaster-Fokus zeigt. Statt einer einfachen Herkunft nutzt dieses System ein <strong>Main- und Sub-Element-Modell</strong>, in dem Element, Breath-Stil, Resistenz und Kampfthema direkt miteinander verknüpft sind.</p>
-            <p>Im Kern dreht sich die Rasse um <strong>Elemental Ancestry</strong>, <strong>Breath Weapon</strong> und die <strong>True Dragon Form</strong> ab Level 8. Hybride sind vollständig integriert, damit sich Mischformen nicht wie ein Zusatz, sondern wie ein echter Teil des Systems anfühlen. <strong>Draconic Gifts wurden vollständig entfernt.</strong></p>
-            <div class="pill-wrap">
-              <span class="pill">Spellcaster-Fokus</span>
-              <span class="pill">Main + Sub Elements</span>
-              <span class="pill">Hybrid-Integration</span>
-              <span class="pill">True Dragon Form</span>
-              <span class="pill">Keine Draconic Gifts</span>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="card">
-              <h3>Wichtige Änderungen</h3>
-              <ul>
-                <li>Dragon Blooded ersetzt die klassische Dragonborn-Lineage mit stärkerem Arcane-Fokus.</li>
-                <li>Elemente sind jetzt über Main- und Sub-Elemente strukturiert.</li>
-                <li>Hybride wurden direkt in das System eingebaut.</li>
-                <li>True Dragon Form startet ab <strong>Level 8</strong> und bleibt aktiv, bis sie beendet wird.</li>
-                <li><strong>Draconic Gifts existieren hier nicht mehr.</strong></li>
-              </ul>
-            </div>
-            <div class="card">
-              <h3>Quick Rules Snapshot</h3>
-              <div class="stat-list">
-                <div class="stat-line"><div class="stat-name">Creature / Size</div><div>Humanoid, Medium</div></div>
-                <div class="stat-line"><div class="stat-name">Speed</div><div>30 feet</div></div>
-                <div class="stat-line"><div class="stat-name">Core Features</div><div>Elemental Ancestry, Resistance, Breath Weapon, True Dragon Form</div></div>
-                <div class="stat-line"><div class="stat-name">Power Breakpoint</div><div>True Dragon Form at Level 8</div></div>
-              </div>
-            </div>
-            <div class="card" style="grid-column:1/-1">
-              <h3>Typen geben nun Stats</h3>
-              <table>
-                <thead>
-                  <tr><th>Typ</th><th>Attributsboni</th><th>Rolle</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td><strong>Attacker</strong></td><td>+2 Str, +1 Wis</td><td>Offensiver Druck, hohe Schadensausrichtung</td></tr>
-                  <tr><td><strong>Tanker</strong></td><td>+2 Con, +1 Int</td><td>Standfest, mehr Masse, hohe Zähigkeit</td></tr>
-                  <tr><td><strong>Sprinter</strong></td><td>+2 Dex / Ges, +1 Cha</td><td>Mobil, schnell, gute Präsenz und Kontrolle</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-traits">
-        <div class="card">
-          <h2 class="section-title">Dragon Blooded Traits</h2>
-          <div class="stat-list">
-            <div class="stat-line">
-              <div class="stat-name">Creature Type</div>
-              <div>Humanoid</div>
-            </div>
-            <div class="stat-line">
-              <div class="stat-name">Size</div>
-              <div>Medium</div>
-            </div>
-            <div class="stat-line">
-              <div class="stat-name">Speed</div>
-              <div>30 feet</div>
-            </div>
-            <div class="stat-line">
-              <div class="stat-name">Elemental Ancestry</div>
-              <div>Wähle ein Main Element und ein Sub Element aus derselben Gruppe. Diese Wahl bestimmt Schadensstil, Resistance und Breath-/Attack-Profil.</div>
-            </div>
-            <div class="stat-line">
-              <div class="stat-name">Elemental Resistance</div>
-              <div>Du erhältst Widerstand gegen den primären Schadenstyp deines gewählten Elements.</div>
-            </div>
-            <div class="stat-line">
-              <div class="stat-name">Breath Weapon</div>
-              <div>
-                <div>DC = 8 + proficiency bonus + Charisma modifier</div>
-                <ul>
-                  <li>Level 1: 1d10</li>
-                  <li>Level 5: 2d10</li>
-                  <li>Level 11: 3d10</li>
-                  <li>Level 17: 4d10</li>
-                </ul>
-              </div>
-            </div>
-            <div class="stat-line">
-              <div class="stat-name">True Dragon Form</div>
-              <div>
-                <ul>
-                  <li>Verfügbar ab <strong>Level 8</strong>.</li>
-                  <li>Aktivierung mit einer <strong>Action</strong>.</li>
-                  <li><strong>Dauer:</strong> Im Kampf: Basis-Runden basierend auf Level, dann Exhaustion Points alle 2 Runden. Außerhalb: Basis × 5.</li>
-                  <li>Kann Fliegen.</li>
-                  <li>Standart AC ist <strong>16 + Drachen Schuppen</strong>.</li>
-                </ul>
-                <div class="notice">
-                  <strong>Dauer-System</strong>
-                  <ul>
-                    <li><strong>Im Kampf</strong>
-                      <ol>
-                        <li>Du startest mit <strong>Basis</strong> Runden in der Form, danach erhältst du 1 Exhaustion Point.</li>
-                        <li>Dann läuft die Form für weitere <strong>Basis–1</strong> Runden, bevor du den nächsten Point erhältst.</li>
-                        <li>Dann weitere <strong>Basis–2</strong> Runden etc., bis <strong>Basis = 0</strong> (Form endet automatisch).</li>
-                      </ol>
-                    </li>
-                    <li><strong>Basis nach Level</strong>
-                      <table>
-                        <thead><tr><th>Level</th><th>Basis</th></tr></thead>
-                        <tbody>
-                          <tr><td>8–9</td><td>3</td></tr>
-                          <tr><td>10–11</td><td>4</td></tr>
-                          <tr><td>12–13</td><td>5</td></tr>
-                          <tr><td>14–15</td><td>6</td></tr>
-                          <tr><td>16–17</td><td>7</td></tr>
-                          <tr><td>18–19</td><td>8</td></tr>
-                          <tr><td>20</td><td>9</td></tr>
-                        </tbody>
-                      </table>
-                    </li>
-                    <li><strong>Außerhalb von Kämpfen:</strong> Basis × 5.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-elements">
-        <div class="grid-main">
-          <div class="card">
-            <h2 class="section-title">Main Element + Sub Element</h2>
-            <div class="button-row" id="mainElementButtons"></div>
-            <div class="button-row" id="subElementButtons"></div>
-            <div class="notice">Es gibt drei Kategorien: <strong>Kegel-Breath</strong>, <strong>Strahl-Breath</strong> und <strong>Kein Breath</strong>. Die Buttons filtern die Sub-Elemente passend zum gewählten Main Element.</div>
-          </div>
-          <div class="card detail-box" id="subElementDetail"></div>
-        </div>
-
-        <div class="hybrid-grid" style="margin-top:16px">
-          <div class="card">
-            <h2 class="section-title">Hybrid Dragons</h2>
-            <div class="list-stack" id="hybridList"></div>
-          </div>
-          <div class="card detail-box" id="hybridDetail"></div>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-progression">
-        <div class="card">
-          <h2 class="section-title">Level Progression</h2>
-          <div class="timeline">
-            <div class="timeline-item">
-              <h3>Level 1</h3>
-              <ul>
-                <li>Elemental Ancestry</li>
-                <li>Elemental Resistance</li>
-                <li>Breath Weapon</li>
-                <li>Breath Dmg = Normal Breath : 2</li>
-              </ul>
-            </div>
-            <div class="timeline-item">
-              <h3>Level 8</h3>
-              <ul>
-                <li>True Dragon Form</li>
-                <li>Stronger Dragon Breath</li>
-                <li>Better Movement</li>
-                <li>neue 16 AC + Drachen Schuppen</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-hub">
-        <div class="card">
-          <h2 class="section-title">Dragon System Hub</h2>
-          <div class="subtabs" id="hubTabs">
-            <button class="subtab-btn active-btn" data-subtab="hub-overview">Overview</button>
-            <button class="subtab-btn" data-subtab="hub-elemente">Elemente</button>
-            <button class="subtab-btn" data-subtab="hub-habitate">Habitate</button>
-            <button class="subtab-btn" data-subtab="hub-mutationen">Mutationen</button>
-            <button class="subtab-btn" data-subtab="hub-growth">Alter / Größen / Charges</button>
-          </div>
-
-          <div class="subtab-pane active" id="hub-overview">
-            <div class="grid-3">
-              <div class="card">
-                <h3>Würfelübersicht</h3>
-                <table>
-                  <thead><tr><th>Stufe</th><th>Elementarwürfel</th><th>Physischer Würfel</th></tr></thead>
-                  <tbody>
-                    <tr><td>Child</td><td>d4</td><td>d2</td></tr>
-                    <tr><td>Teen</td><td>d8</td><td>d6</td></tr>
-                    <tr><td>Adult</td><td>d10</td><td>d8</td></tr>
-                    <tr><td>Senior</td><td>d12</td><td>d10</td></tr>
-                    <tr><td>Ancient</td><td>d20</td><td>d12</td></tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="card">
-                <h3>DDD &amp; Typ-Stats</h3>
-                <table>
-                  <thead><tr><th>Typ</th><th>DDD</th><th>Stats</th></tr></thead>
-                  <tbody>
-                    <tr><td>Attacker</td><td>4</td><td>+2 Str, +1 Wis</td></tr>
-                    <tr><td>Tanker</td><td>2</td><td>+2 Con, +1 Int</td></tr>
-                    <tr><td>Sprinter</td><td>3</td><td>+2 Ges / Dex, +1 Cha</td></tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="card">
-                <h3>Physische Attacken</h3>
-                <ul>
-                  <li><strong>Bite</strong> = Piercing</li>
-                  <li><strong>Slash</strong> = Slashing</li>
-                  <li><strong>Tail</strong> = Bludgeoning, Würfel eine Stufe höher</li>
-                </ul>
-                <div class="notice">Tail-Mapping: d2 → d3, d6 → d8, d8 → d10, d10 → d12, d12 → d20</div>
-              </div>
-
-              <div class="card">
-                <h3>Breath-Reichweiten über Charges</h3>
-                <ul>
-                  <li><strong>Kegel-Breath</strong>: Start 10 ft, +10 ft pro Charge, max 100 ft bei 10 Charges</li>
-                  <li><strong>Strahl-Breath</strong>: Start 20 ft, +20 ft pro Charge, max 200 ft bei 10 Charges</li>
-                </ul>
-              </div>
-
-              <div class="card" style="grid-column: span 2">
-                <h3>No-Breath-Drachen</h3>
-                <p>Bei No-Breath-Drachen werden die Würfel umgedreht. Beispiel: <strong>Adult Attacker</strong> normal wäre <strong>4d10</strong> und wird zu <strong>10d4</strong>.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="subtab-pane" id="hub-elemente">
-            <div class="grid-2">
-              <div class="card">
-                <h3>Rollen nach Main Element</h3>
-                <table>
-                  <thead><tr><th>Main Element</th><th>Main DPS</th><th>Sub DPS</th><th>Supporter</th><th>Healer</th></tr></thead>
-                  <tbody>
-                    <tr><td>Fire</td><td>Inferno, Lava, Combustion, Solar</td><td>Detonation, Emberstorm</td><td>Heat, Flame Ward</td><td>Phoenix, Reignite</td></tr>
-                    <tr><td>Water</td><td>Abyss, Tidal, Glacier</td><td>Jetstream, Frostbite</td><td>Mistveil, Current Guide</td><td>Springwater</td></tr>
-                    <tr><td>Lightning</td><td>Tempest, Arc, Plasma Core</td><td>Static Field, Pulse, Thunderclap</td><td>Conductor</td><td>Bioelectric Surge, Energy Flow</td></tr>
-                    <tr><td>Natur</td><td>Venom, Wildfang, Bone, Acid</td><td>Sporeburst, Razorleaf</td><td>Rootbind</td><td>Verdant Heal, Lifewaver</td></tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="card">
-                <h3>Counter-Tabelle</h3>
-                <table>
-                  <thead><tr><th>Element</th><th>Stark gegen</th><th>Neutral gegen</th><th>Schwach gegen</th></tr></thead>
-                  <tbody>
-                    <tr><td>Fire</td><td>Natur</td><td>Lightning</td><td>Water</td></tr>
-                    <tr><td>Water</td><td>Fire</td><td>Natur</td><td>Lightning</td></tr>
-                    <tr><td>Lightning</td><td>Water</td><td>Fire</td><td>Natur</td></tr>
-                    <tr><td>Natur</td><td>Lightning</td><td>Water</td><td>Fire</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="grid-3" style="margin-top:16px">
-              <div class="card">
-                <h3>Kegel-Breath</h3>
-                <p>Inferno, Lava, Combustion, Emberstorm, Reignite, Tidal, Glacier, Frostbite, Mistveil, Current Guide, Springwater, Tempest, Venom, Acid, Sporeburst, Lifewaver</p>
-              </div>
-              <div class="card">
-                <h3>Strahl-Breath</h3>
-                <p>Solar, Detonation, Flame Ward, Phoenix, Abyss, Jetstream, Arc, Plasma Core</p>
-              </div>
-              <div class="card">
-                <h3>No-Breath</h3>
-                <p>Heat, Static Field, Pulse, Thunderclap, Conductor, Bone, Razorleaf, Rootbind, Bioelectric Surge, Energy Flow, Verdant Heal</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="subtab-pane" id="hub-habitate">
-            <div class="card">
-              <h3>Habitate</h3>
-              <table>
-                <thead><tr><th>Element</th><th>Umgebung</th><th>Beispiele</th><th>Buffs</th></tr></thead>
-                <tbody>
-                  <tr><td>Fire</td><td>heiß, trocken, vulkanisch</td><td>Vulkane, Lavafelder, Wüsten, verbrannte Wälder</td><td>+20% Feuer-Schaden, Burn hält länger, Immun gegen Hitze</td></tr>
-                  <tr><td>Water</td><td>Gewässer oder sehr feuchte Orte</td><td>Ozeane, Seen, Flüsse, Sümpfe, Regengebiete</td><td>höhere Wasserkapazität +3, Bewegung +20%, resistent gegen Feuer</td></tr>
-                  <tr><td>Lightning</td><td>sturmreiche oder hohe Regionen</td><td>Berge, Sturmgebiete, Gewitterfelder, hohe Klippen</td><td>+20% Blitz-Schaden, höhere Angriffsgeschwindigkeit, Chance auf extra Blitz 1d4</td></tr>
-                  <tr><td>Natur</td><td>pflanzenreiche oder natürliche Gebiete</td><td>Wälder, Dschungel, Wiesen, Sümpfe</td><td>+20% Gift/Natur-Schaden, leichtere Tarnung, leichte Selbstheilung</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="subtab-pane" id="hub-mutationen">
-            <div class="mut-grid" id="mutationTables"></div>
-          </div>
-
-          <div class="subtab-pane" id="hub-growth">
-            <div class="card">
-              <h3>Alter / Größen / Charges</h3>
-              <div class="role-row" id="growthRoleButtons"></div>
-              <div id="growthDisplay"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-calculators">
-        <div class="grid-3">
-          <div class="card" style="grid-column:1/-1">
-            <h2 class="section-title">Damage-Rechner</h2>
-            <div class="form-grid">
-              <div class="field">
-                <label for="dragonKind">Drachen-Art</label>
-                <select id="dragonKind">
-                  <option>Standard-Drache</option>
-                  <option>Hybrid-Drache</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="formSelect">Form</label>
-                <select id="formSelect">
-                  <option>Dragon Form</option>
-                  <option>Human Form</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="attackType">Attacke</label>
-                <select id="attackType">
-                  <option>Schlagen / Slash</option>
-                  <option>Bite</option>
-                  <option>Schwanzattacke</option>
-                  <option>Breath Attack</option>
-                  <option>No-Breath Spezialattacke</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="ageSelect">Alter</label>
-                <select id="ageSelect"></select>
-              </div>
-              <div class="field">
-                <label for="typeSelect">Typ</label>
-                <select id="typeSelect"></select>
-              </div>
-              <div class="field standard-only">
-                <label for="mainElementSelect">Main Element</label>
-                <select id="mainElementSelect"></select>
-              </div>
-              <div class="field standard-only">
-                <label for="subElementSelect">Sub Element</label>
-                <select id="subElementSelect"></select>
-              </div>
-              <div class="field hybrid-only hide">
-                <label for="hybridSelect">Hybrid-Drache</label>
-                <select id="hybridSelect"></select>
-              </div>
-              <div class="field">
-                <label for="chargesUsed">Charges benutzt</label>
-                <input id="chargesUsed" type="number" min="1" max="10" value="1" />
-              </div>
-              <div class="field standard-only">
-                <label for="habitatActive">Habitatsvorteil aktiv?</label>
-                <select id="habitatActive">
-                  <option value="nein">Nein</option>
-                  <option value="ja">Ja</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="playerLevel">Player Level</label>
-                <input id="playerLevel" type="number" min="1" max="20" value="8" />
-              </div>
-              <div class="field">
-                <label for="strMod">STR Mod</label>
-                <input id="strMod" type="number" min="-5" max="10" value="3" />
-              </div>
-              <div class="field standard-only" style="grid-column:1/-1">
-                <label>Mutationen (Mehrfachauswahl)</label>
-                <div class="multi-select" id="mutationSelector"></div>
-              </div>
-            </div>
-            <div style="margin-top:16px">
-              <button class="calc-btn active-btn" id="calcDamageBtn">Schaden berechnen</button>
-            </div>
-            <div class="result-box" style="margin-top:16px">
-              <div class="result-grid" id="damageMetrics"></div>
-              <div class="card" style="padding:14px">
-                <h3 style="margin-top:0">Formel &amp; Notizen</h3>
-                <div id="damageFormula"></div>
-              </div>
-              <div class="card" style="padding:14px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                  <h3 style="margin:0">Historie vergangener Berechnungen</h3>
-                  <button class="calc-btn" id="clearHistoryBtn" style="padding:8px 12px;font-size:12px">Clear</button>
-                </div>
-                <div class="history-list" id="damageHistory"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h2 class="section-title">Core-Stat-Rechner</h2>
-            <div class="form-grid">
-              <div class="field">
-                <label for="coreAge">Alter</label>
-                <select id="coreAge"></select>
-              </div>
-              <div class="field">
-                <label for="coreType">Typ</label>
-                <select id="coreType"></select>
-              </div>
-              <div class="field">
-                <label for="coreLevel">Level</label>
-                <input id="coreLevel" type="number" min="1" max="20" value="8" />
-              </div>
-              <div class="field">
-                <label for="hpMode">HP-Modus</label>
-                <select id="hpMode">
-                  <option>Durchschnitt</option>
-                  <option>Gewürfelt</option>
-                </select>
-              </div>
-            </div>
-            <div style="margin-top:16px"><button class="calc-btn active-btn" id="calcCoreBtn">Core Stats berechnen</button></div>
-            <div class="result-box" style="margin-top:16px">
-              <div class="result-grid" id="coreMetrics"></div>
-              <div class="card" style="padding:14px" id="coreDetails"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h2 class="section-title">Schuppen-Helfer</h2>
-            <div class="form-grid">
-              <div class="field">
-                <label for="scaleWeek">Woche</label>
-                <input id="scaleWeek" type="number" min="1" value="1" />
-              </div>
-              <div class="field">
-                <label for="scaleRoll">d20 Wurf</label>
-                <input id="scaleRoll" type="number" min="1" max="20" value="12" />
-              </div>
-            </div>
-            <div style="margin-top:16px"><button class="calc-btn active-btn" id="calcScaleBtn">Schuppen prüfen</button></div>
-            <div class="result-box" style="margin-top:16px">
-              <div class="result-grid" id="scaleMetrics"></div>
-              <div class="card" style="padding:14px" id="scaleDetails"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <div class="footer-note">Dragon Blooded — Ein-Datei-Webseite mit eingebettetem CSS und JavaScript.</div>
-  </div>
+  </main>
 
   <script>
-    const data = {
-      ages: {
-        Child: { elementalDie: 4, physicalDie: 2 },
-        Teen: { elementalDie: 8, physicalDie: 6 },
-        Adult: { elementalDie: 10, physicalDie: 8 },
-        Senior: { elementalDie: 12, physicalDie: 10 },
-        Ancient: { elementalDie: 20, physicalDie: 12 }
-      },
-      ddd: { Attacker: 4, Tanker: 2, Sprinter: 3 },
-      typeStats: {
-        Attacker: '+2 Str, +1 Wis',
-        Tanker: '+2 Con, +1 Int',
-        Sprinter: '+2 Dex / Ges, +1 Cha'
-      },
-      mainElements: {
-        Fire: {
-          resistance: 'Fire',
-          subs: {
-            Inferno:{theme:'Massiver Feuer-DPS', shape:'Kegel-Breath', resistance:'Fire', desc:['Aggressiver Flammenwerfer-Stil','Hoher Druck auf Gruppen','Klassischer Main DPS']},
-            Lava:{theme:'Schwere Hitzewellen und Schmelzschaden', shape:'Kegel-Breath', resistance:'Fire', desc:['Druckvoll und brutal','Vulkanisches Schadensprofil','Stark gegen Natur']},
-            Combustion:{theme:'Explosive Feuerwucht', shape:'Kegel-Breath', resistance:'Fire', desc:['Hoher Burst-Schaden','Flächengefährlich','Offensiv fokussiert']},
-            Solar:{theme:'Gebündelte Hitze / Strahl', shape:'Strahl-Breath', resistance:'Radiant / Fire', desc:['Präziser Strahl','Sehr geradliniger DPS-Stil','Ideal für Distanzdruck']},
-            Detonation:{theme:'Explosionen und Ausbrüche', shape:'Strahl-Breath', resistance:'Fire', desc:['Detonativer Burst','Zielgerichtete Strahlwirkung','Sekundärer DPS-Fokus']},
-            Emberstorm:{theme:'Feuersturm / Flammenregen', shape:'Kegel-Breath', resistance:'Fire', desc:['Flächenkontrolle','Dauerhafter Druck','Chaotisches Kampfprofil']},
-            Heat:{theme:'Passive Hitze / No-Breath', shape:'Kein Breath', resistance:'Fire', desc:['Kein klassischer Atem','Nutzen über Aura / Präsenz','Support-lastiger Fire-Stil']},
-            'Flame Ward':{theme:'Schützende Flammenschicht', shape:'Strahl-Breath', resistance:'Fire', desc:['Defensiver Fire-Support','Schirmt Verbündete ab','Kontrollierter Magiefokus']},
-            Phoenix:{theme:'Heilung, Erneuerung, Strahl', shape:'Strahl-Breath', resistance:'Fire', desc:['Support / Recovery','Wiederaufstehendes Motiv','Seltene Heilerrolle']},
-            Reignite:{theme:'Wiederentzündung / Heiler-Kegel', shape:'Kegel-Breath', resistance:'Fire', desc:['Erhalt und Reaktivierung','Heil-/Buff-Nähe','Stabile Teamrolle']}
-          }
-        },
-        Water: {
-          resistance: 'Cold / Water',
-          subs: {
-            Abyss:{theme:'Dunkler Tiefenstrahl', shape:'Strahl-Breath', resistance:'Cold', desc:['Schwer und bedrückend','Hoher Fokus auf Zielkontrolle','Main DPS aus der Tiefe']},
-            Tidal:{theme:'Wasserwucht / Druckwelle', shape:'Kegel-Breath', resistance:'Cold / Water', desc:['Breite Flutfront','Stark gegen Fire','Zuverlässiger Main DPS']},
-            Glacier:{theme:'Schwere Kälte und Trägheit', shape:'Kegel-Breath', resistance:'Cold', desc:['Langsamer, harter Schlag','Kontrolle und Kälte','Main DPS mit Härte']},
-            Jetstream:{theme:'Komprimierter Wasserstrahl', shape:'Strahl-Breath', resistance:'Cold / Water', desc:['Sauberer Linienangriff','Präzise Reichweite','Sekundärer DPS']},
-            Frostbite:{theme:'Frostige Nahfeldwelle', shape:'Kegel-Breath', resistance:'Cold', desc:['Verlangsamungsthema','Sekundärer DPS','Kontrollnah']},
-            Mistveil:{theme:'Nebel und Verschleierung', shape:'Kegel-Breath', resistance:'Cold / Water', desc:['Support durch Sichtkontrolle','Schutz und Verwirrung','Taktischer Nutzen']},
-            'Current Guide':{theme:'Leitende Wasserströmung', shape:'Kegel-Breath', resistance:'Cold / Water', desc:['Supportive Bewegungsführung','Hilft Positionierung','Utility-Fokus']},
-            Springwater:{theme:'Regeneration und Erneuerung', shape:'Kegel-Breath', resistance:'Cold / Water', desc:['Heilerrolle','Sanfte Stabilisierung','Team sustain']}
-          }
-        },
-        Lightning: {
-          resistance: 'Lightning',
-          subs: {
-            Tempest:{theme:'Sturm und Flächenblitz', shape:'Kegel-Breath', resistance:'Lightning', desc:['Main DPS mit Sturmprofil','Breite Entladung','Stark gegen Water']},
-            Arc:{theme:'Gebündelter Blitzstrahl', shape:'Strahl-Breath', resistance:'Lightning', desc:['Präzise Linienentladung','Main DPS','Sauberer Distanzdruck']},
-            'Plasma Core':{theme:'Überladene Plasmaentladung', shape:'Strahl-Breath', resistance:'Lightning', desc:['Extrem offensiv','Gerichteter Schmelz-/Blitzdruck','Elite-DPS-Gefühl']},
-            'Static Field':{theme:'Statisches Feld / No-Breath', shape:'Kein Breath', resistance:'Lightning', desc:['Kontrollzone statt Atem','Elektrische Nähe','Sub DPS / Utility']},
-            Pulse:{theme:'Impulsentladung / No-Breath', shape:'Kein Breath', resistance:'Lightning', desc:['Rhythmische Energieausstöße','Kein normaler Atem','Sekundäre DPS-Rolle']},
-            Thunderclap:{theme:'Schockstoß / No-Breath', shape:'Kein Breath', resistance:'Lightning', desc:['Druck durch Schall und Blitz','Kein klassischer Breath','Burst-nahe Utility']},
-            Conductor:{theme:'Leitende Verstärkung / No-Breath', shape:'Kein Breath', resistance:'Lightning', desc:['Supporter für Energiesynergien','Taktische Teamrolle','Leitendes Profil']},
-            'Bioelectric Surge':{theme:'Regenerative Bioenergie', shape:'Kein Breath', resistance:'Lightning', desc:['Heilerprofil','Lebendige Energie','Stützt Verbündete']},
-            'Energy Flow':{theme:'Fließende Energieheilung', shape:'Kein Breath', resistance:'Lightning', desc:['Heilfokus','Sanfter Support','Magischer Kreislauf']}
-          }
-        },
-        Natur: {
-          resistance: 'Poison / Nature',
-          subs: {
-            Venom:{theme:'Gift und Verfall', shape:'Kegel-Breath', resistance:'Poison', desc:['Main DPS mit Vergiftung','Breiter Schadensraum','Stark gegen Lightning']},
-            Preasure:{theme:'Kugel Breath / Supporter', shape:'Kugel-Breath', resistance:'Nature', desc:['Kugelprojektil in gerader Linie','Breite Feldkontrolle','Spezialformel mit Knockback']},
-            Bone:{theme:'Knochenhärte / No-Breath', shape:'Kein Breath', resistance:'Nature', desc:['Brutaler physischer Stil','Kein Breath','Massiver Druck']},
-            Acid:{theme:'Säure und Zersetzung', shape:'Kegel-Breath', resistance:'Acid / Poison', desc:['Hoher Flächenverschleiß','Main DPS','Ekelhaft effektiv']},
-            Sporeburst:{theme:'Sporenexplosion', shape:'Kegel-Breath', resistance:'Poison', desc:['Sub DPS mit Debuff-Flair','Störender Nebel','Zersetzung und Fläche']},
-            Razorleaf:{theme:'Schneidende Natur / No-Breath', shape:'Kein Breath', resistance:'Nature', desc:['Physischer Sub DPS','Keine Atemwaffe','Scharfe Nah-/Fernwirkung']},
-            Rootbind:{theme:'Wurzeln und Fesselung / No-Breath', shape:'Kein Breath', resistance:'Nature', desc:['Supporter mit Kontrolle','Bindet Gegner','Kein normaler Breath']},
-            'Verdant Heal':{theme:'Grüne Regeneration', shape:'Kein Breath', resistance:'Nature', desc:['Heilerrolle','Natürliches Sustain','Lebenskraft im Fokus']},
-            Lifewaver:{theme:'Lebenswoge', shape:'Kegel-Breath', resistance:'Nature', desc:['Heiler-Kegel','Breite restorative Präsenz','Unterstützt Gruppen']}
-          }
-        }
-      },
-      hybrids: {
-        'Steam Dragon': { elements:'Lava (Fire) + Jetstream (Water)', role:'Burst / Pressure Hybrid', desc:['Heiße Dampfdruck-Kombination','Mischung aus Schmelze und Strahldruck','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Thunder Tide Dragon': { elements:'Tidal (Water) + Arc (Lightning)', role:'Storm Pressure Hybrid', desc:['Verbindet Wellenkraft mit Linienblitz','Sehr aggressiv gegen Distanz und Gruppen','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Frost Storm Dragon': { elements:'Glacier (Water) + Static Field (Lightning)', role:'Control Hybrid', desc:['Träge Kälte plus elektrische Zone','Stört Bewegung und Rhythmus','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Solar Tempest Dragon': { elements:'Solar (Fire) + Tempest (Lightning)', role:'High Beam DPS', desc:['Gebündelte Hitze trifft Sturmgewalt','Sehr offensiver Hybrid','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Acid Rain Dragon': { elements:'Acid (Natur) + Mistveil (Water)', role:'Debuff Hybrid', desc:['Zermürbt Gegner mit Säure und Feuchtigkeit','Perfekt für langsamen Druck','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Thunder Root Dragon': { elements:'Rootbind (Natur) + Thunderclap (Lightning)', role:'Control / Lockdown Hybrid', desc:['Bindet und schockt Gegner','Starker Utility-Fokus','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Ash Plague Dragon': { elements:'Detonation (Fire) + Sporeburst (Natur)', role:'Plague Burst Hybrid', desc:['Explosive Verseuchung','Chaotischer Hybrid mit Flächenprofil','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Burning Forest Dragon': { elements:'Heat (Fire) + Razorleaf (Natur)', role:'No-Breath Pressure Hybrid', desc:['Dauerhafter Hitze- und Klingenstress','Stark über Präsenz statt Atem','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Bio Storm Dragon': { elements:'Bioelectric Surge (Lightning) + Lifewaver (Natur)', role:'Support / Recovery Hybrid', desc:['Heilung und Energiefluss kombiniert','Sehr teamfreundliche Hybridrolle','Keine Mutationen','Keine Habitatsvorteile'] },
-        'Phoenix Tide Dragon': { elements:'Phoenix (Fire) + Springwater (Water)', role:'Healer Hybrid', desc:['Wiedergeburt trifft Regeneration','Stabile Unterstützerrolle','Keine Mutationen','Keine Habitatsvorteile'] }
-      },
-      hybridShapes: {
-        'Steam Dragon': 'Kegel-Breath',
-        'Thunder Tide Dragon': 'Kegel-Breath',
-        'Frost Storm Dragon': 'Kegel-Breath',
-        'Acid Rain Dragon': 'Kegel-Breath',
-        'Ash Plague Dragon': 'Kegel-Breath',
-        'Phoenix Tide Dragon': 'Strahl-Breath',
-        'Solar Tempest Dragon': 'Strahl-Breath',
-        'Bio Storm Dragon': 'Strahl-Breath',
-        'Thunder Root Dragon': 'Kein Breath',
-        'Burning Forest Dragon': 'Kein Breath'
-      },
-      breathTypes: {
-        cone: ['Inferno','Lava','Combustion','Emberstorm','Reignite','Tidal','Glacier','Frostbite','Mistveil','Current Guide','Springwater','Tempest','Venom','Acid','Sporeburst','Lifewaver'],
-        beam: ['Solar','Detonation','Flame Ward','Phoenix','Abyss','Jetstream','Arc','Plasma Core'],
-        pressure: ['Preasure'],
-        none: ['Heat','Static Field','Pulse','Thunderclap','Conductor','Bone','Razorleaf','Rootbind','Bioelectric Surge','Energy Flow','Verdant Heal']
-      },
-      habitats: {
-        Fire: { damageBonus: 0.20 },
-        Water: { damageBonus: 0 },
-        Lightning: { damageBonus: 0.20 },
-        Natur: { damageBonus: 0.20 }
-      },
-      damageRelevantMutations: {
-        Fire: {
-          'Heat Core': { type:'percentBreath', value:0.10, note:'+10% auf Breath / Feuerfähigkeit' }
-        },
-        Water: {
-          'Pressure Bite': { type:'note', note:'Hinweis nur auf Bite' },
-          'Ice Claws': { type:'note', note:'Hinweis, kein fixer Damage' }
-        },
-        Lightning: {
-          'Conductive Scales': { type:'percentBreath', value:0.10, note:'+10% auf Breath / Blitzfähigkeit' },
-          'Extra Charge': { type:'note', note:'Hinweis: +1 Blitzladung' },
-          'Arc Jump': { type:'note', note:'Hinweis: springt auf zusätzlichen Gegner' },
-          'Living Lightning': { type:'note', note:'Hinweis: 1x pro Tag 2x Breath-Schaden (wird hier automatisch verdoppelt)' }
-        },
-        Natur: {
-          'Razor Leaves': { type:'percentPhysical', value:0.10, note:'+10% auf physische Angriffe' },
-          'Nature Bond': { type:'percentHabitatDependent', value:0.10, note:'+10% nur wenn Habitat aktiv' },
-          'Predator Instinct': { type:'percentMelee', value:0.10, note:'+10% auf Nahkampfschaden' },
-          'Acid Spit': { type:'note', note:'Hinweis: Extra Dmg auf Bisse +20% Dmg' },
-          'Poison Fangs': { type:'note', note:'Hinweis: Biss verursacht Gift' },
-          'Spore Cloud': { type:'note', note:'Hinweis: Sporen verlangsamen / schaden situativ' }
-        }
-      },
-      mutations: {
-        Fire: [
-          '1 Lava Scales = +1 Armor gegen physische Angriffe','2 Heat Core = Feuerfähigkeiten +10% Schaden','3 Magma Blood = Nahkampfangriffe verursachen Burn','4 Flame Horns = Kopfstoß verursacht Feuerschaden','5 Ash Veil = Kleine Rauchwolke reduziert Trefferchance auf den Drachen','6 Solar Eyes = +1 Wahrnehmung, sieht durch Rauch','7 Ember Tail = Schwanzangriffe verursachen Burn','8 Heat Aura = Gegner im Nahkampf nehmen kleinen Feuerschaden','9 Fire Resistance = Immun gegen Burn','10 Molten Bite = Biss verursacht +20% Feuerschaden','11 Inferno Lungs = Feueratem Reichweite +10 ft.','12 Blaze Speed = +10% Bewegungsgeschwindigkeit','13 Char Armor = +1 Armor gegen Elementar-Schaden','14 Cinder Wings = Fluggeschwindigkeit +20%','15 Flame Burst = 1x pro Kampf kleine Explosion beim Landen','16 Burning Claws = Klauen verursachen Burn','17 Solar Charge = Feuerfähigkeiten laden schneller','18 Ash Regeneration = Regeneriert alle 6 Sek. 1% max HP wenn Umgebung heiß ist','19 Lava Hide = Resistenz gegen Explosionen','20 Phoenix Spark = 1x pro Kampf überlebt mit 1 HP'
-        ],
-        Water: [
-          '1 Tidal Muscles = adv. auf Str. Würfe','2 Deep Pressure = Angriffe verursachen Knockback','3 Frost Scales = Resistenz gegen Kälte','4 Streamlined Body = +20% Speed im Wasser','5 Mist Breath = Atem erzeugt Nebel','6 Ice Claws = Angriffe können Slow verursachen','7 Water Armor = +1 Armor wenn nass','8 Healing Water = heilt 1% der max HP alle 6 Sekunden','9 Jet Tail = Schwanzangriff stößt Gegner weg','10 Current Sense = erkennt Bewegungen im Wasser','11 Ice Core = Eisfähigkeiten stärker','12 Tidal Roar = Schrei erzeugt kleine Welle','13 Ocean Lungs = Unterwasseratmung','14 Rain Caller = leichte Regenwolke entsteht','15 Frost Aura = Gegner werden leicht verlangsamt','16 Liquid Body = etwas schwerer zu treffen: +1 AC','17 Wave Charge = schneller Angriff im Wasser +1 auf Angriff','18 Pressure Bite = Biss verursacht +10% zusätzlichen Schaden','19 Glacier Hide = Resistenz gegen physischen Schaden','20 Leviathan Blood = +20% max HP'
-        ],
-        Lightning: [
-          '1 Extra Charge = +1 Blitzladung','2 Static Skin = Nahkampfangreifer erhalten kleinen Blitzschaden','3 Storm Eyes = sieht durch Regen und Nebel','4 Electric Wings = Fluggeschwindigkeit +10%','5 Thunder Heart = Blitzfähigkeiten laden schneller','6 Arc Tail = Schwanzangriffe springen auf zweiten Gegner','7 Conductive Scales = Blitzfähigkeiten +10% Schaden','8 Static Field = kleine elektrische Aura','9 Flash Step = 1 mal free Dash pro Tag (Ground)','10 Ion Breath = Atem verursacht Stun-Chance','11 Storm Core = Resistenz gegen Blitz','12 Lightning Claws = Klauen verursachen Elektroschaden','13 Charge Storage = Fähigkeit kann eine Ladung extra speichern','14 Thunder Roar = Schrei verursacht kleinen Stun','15 Pulse Wings = 1 mal free Dash pro Tag (Fly)','16 Arc Jump = Blitz springt auf zusätzlichen Gegner; 1/2 Dmg, im 5 ft Radius','17 Static Armor = +1 Armor gegen Energie','18 Electric Regeneration = heilt leicht während Gewitter','19 Storm Caller = kleine Gewitterwolke entsteht','20 Living Lightning = 1x pro Tag 2x Dmg'
-        ],
-        Natur: [
-          '1 Thorn Scales = Nahkampfangreifer nehmen Schaden','2 Regrowth = langsame Selbstheilung','3 Camouflage = schwerer zu entdecken im Wald','4 Vine Tail = Schwanz kann Gegner festhalten','5 Poison Fangs = Biss verursacht Gift','6 Bark Armor = +1 natürliche Rüstung','7 Spore Cloud = kleine Giftwolke beim Angriff','8 Root Grip = Gegner werden kurz verlangsamt','9 Verdant Wings = lautloser Flug im Wald','10 Forest Sense = erkennt Bewegungen in Natur','11 Healing Sap = kleine Heilung nach Kampf','12 Razor Leaves = +10% Dmg auf physische Angriffe','13 Swamp Blood = Resistenz gegen Gift','14 Nature Bond = +10% Dmg im Wald','15 Bloom Aura = Verbündete regenerieren leicht in 5 ft Radius','16 Bone Growth = Nahkampfangreifer nehmen Schaden','17 Acid Spit = Extra Dmg auf Bisse +20% Dmg','18 Predator Instinct = +10% Nahkampfschaden','19 Fungal Growth = Sporen verlangsamen Gegner','20 Ancient Seed = max HP +10%'
-        ]
-      },
-      sizes: {
-        Attacker: {
-          Child:{ years:'0–30 J.', length:4, height:'1 ft', wingspan:4 },
-          Teen:{ years:'30–150 J.', length:8, height:'3 ft', wingspan:8 },
-          Adult:{ years:'150–600 J.', length:20, height:'16 ft', wingspan:26 },
-          Senior:{ years:'600–800 J.', length:28, height:'20 ft', wingspan:34 },
-          Ancient:{ years:'800+ J.', length:40, height:'32 ft', wingspan:48 }
-        },
-        Tanker: {
-          Child:{ years:'0–30 J.', length:9, height:'1,3 ft', wingspan:5 },
-          Teen:{ years:'30–150 J.', length:19, height:'4 ft', wingspan:10 },
-          Adult:{ years:'150–600 J.', length:47, height:'20 ft', wingspan:30 },
-          Senior:{ years:'600–800 J.', length:66, height:'25 ft', wingspan:40 },
-          Ancient:{ years:'800+ J.', length:94, height:'40 ft', wingspan:60 }
-        },
-        Sprinter: {
-          Child:{ years:'0–30 J.', length:4.5, height:'1,2 ft', wingspan:6 },
-          Teen:{ years:'30–150 J.', length:9, height:'3,75 ft', wingspan:12 },
-          Adult:{ years:'150–600 J.', length:22.5, height:'18 ft', wingspan:36 },
-          Senior:{ years:'600–800 J.', length:31.5, height:'22,5 ft', wingspan:48 },
-          Ancient:{ years:'800+ J.', length:45, height:'36 ft', wingspan:72 }
-        }
-      },
-      charges: {
-        Child:{ Tanker:'lvl + 3', Attacker:'lvl + 2', Sprinter:'lvl + 1' },
-        Teen:{ Tanker:'lvl + 4', Attacker:'lvl + 3', Sprinter:'lvl + 2' },
-        Adult:{ Tanker:'lvl + 6', Attacker:'lvl + 5', Sprinter:'lvl + 4' },
-        Senior:{ Tanker:'lvl + 7', Attacker:'lvl + 6', Sprinter:'lvl + 5' },
-        Ancient:{ Tanker:'lvl + 10', Attacker:'lvl + 9', Sprinter:'lvl + 8' }
-      }
-    };
+    const TICKS_PER_SECOND = 20;
+    const MIN_ELEVATION_DEG = -30;
+    const MAX_ELEVATION_DEG = 60;
+    const SOLVER_MIN_DEG = -89;
+    const SOLVER_MAX_DEG = 89;
+    const SOLVER_STEP_DEG = 0.5;
+    const MAX_SIM_TICKS = 24000;
 
-    const state = {
-      mainTab: 'overview',
-      hubTab: 'hub-overview',
-      selectedMainElement: 'Fire',
-      selectedSubElement: 'Inferno',
-      selectedHybrid: 'Steam Dragon',
-      selectedGrowthRole: 'Attacker',
-      damageHistory: []
-    };
+    const ids = [
+      "mountX", "mountY", "mountZ", "targetX", "targetY", "targetZ",
+      "velocity", "barrelLength", "barrelYOffset", "gravityTicks",
+      "gravityMeters", "drag", "preferredArc", "useBarrelLength",
+      "quadraticDrag"
+    ];
 
-    function qs(selector, scope=document){ return scope.querySelector(selector); }
-    function qsa(selector, scope=document){ return Array.from(scope.querySelectorAll(selector)); }
-    function titleCase(value){ return value; }
-    function clamp(num,min,max){ return Math.min(Math.max(num,min),max); }
-    function floor(num){ return Math.floor(num); }
-    function round1(num){ return Math.round(num*10)/10; }
-    function averageDie(die){ return (die + 1) / 2; }
-    function roundUpToNextMultipleOf5(value){ return Math.ceil(value / 5) * 5; }
-    function randomInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-    function rollDice(count, die){
-      let total = 0;
-      const rolls = [];
-      for(let i=0;i<count;i++){
-        const roll = randomInt(1, die);
-        rolls.push(roll);
-        total += roll;
+    const el = Object.fromEntries([
+      ...ids,
+      "status", "resultStatus", "yawValue", "bearingValue", "distanceValue",
+      "heightValue", "muzzleValue", "lowStatus", "lowElevation", "lowPitch",
+      "lowTime", "lowApex", "highStatus", "highElevation", "highPitch",
+      "highTime", "highApex", "note", "trajectory", "scaleStatus",
+      "sampleButton", "copyButton"
+    ].map((id) => [id, document.getElementById(id)]));
+
+    let syncingGravity = false;
+    let latestResult = null;
+
+    function number(id) {
+      const value = Number(el[id].value);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function deg(rad) {
+      return rad * 180 / Math.PI;
+    }
+
+    function rad(degValue) {
+      return degValue * Math.PI / 180;
+    }
+
+    function format(value, digits = 2) {
+      if (!Number.isFinite(value)) return "--";
+      return value.toFixed(digits);
+    }
+
+    function signedFormat(value, digits = 2) {
+      if (!Number.isFinite(value)) return "--";
+      return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}`;
+    }
+
+    function clockwiseDegrees(angle) {
+      return ((angle % 360) + 360) % 360;
+    }
+
+    function mountYaw(dx, dz) {
+      return clockwiseDegrees(deg(Math.atan2(-dx, dz)));
+    }
+
+    function mountPitch(elevationDeg) {
+      return clockwiseDegrees(-elevationDeg);
+    }
+
+    function inMountElevationRange(elevationDeg) {
+      return elevationDeg >= MIN_ELEVATION_DEG && elevationDeg <= MAX_ELEVATION_DEG;
+    }
+
+    function readInputs() {
+      return {
+        mount: { x: number("mountX"), y: number("mountY"), z: number("mountZ") },
+        target: { x: number("targetX"), y: number("targetY"), z: number("targetZ") },
+        velocity: Math.max(0, number("velocity")),
+        barrelLength: Math.max(0, number("barrelLength")),
+        barrelYOffset: number("barrelYOffset"),
+        gravityTicks: Math.max(0.000001, number("gravityTicks")),
+        gravity: Math.max(0.0001, number("gravityMeters")),
+        drag: Math.max(0, number("drag")),
+        quadraticDrag: el.quadraticDrag.checked,
+        preferredArc: el.preferredArc.value,
+        useBarrelLength: el.useBarrelLength.checked
+      };
+    }
+
+    function baseSource(inputs) {
+      return {
+        x: inputs.mount.x,
+        y: inputs.mount.y + inputs.barrelYOffset,
+        z: inputs.mount.z
+      };
+    }
+
+    function acceleration(vh, vy, inputs) {
+      const speed = Math.hypot(vh, vy);
+      if (speed < 1.0E-9) {
+        return { ah: 0, ay: -inputs.gravityTicks };
       }
-      return { total, rolls };
-    }
-    function getAllSubs(){
-      const result = [];
-      Object.entries(data.mainElements).forEach(([main, info]) => {
-        Object.keys(info.subs).forEach(sub => result.push({main, sub}));
-      });
-      return result;
-    }
-    function getSubInfo(main, sub){
-      return data.mainElements[main]?.subs?.[sub] || null;
-    }
-    function getSubByName(subName){
-      for(const [main, info] of Object.entries(data.mainElements)){
-        if(info.subs[subName]) return { main, info: info.subs[subName] };
+
+      let dragForce = inputs.drag * speed;
+      if (inputs.quadraticDrag) {
+        dragForce *= speed;
       }
+      dragForce = Math.min(dragForce, speed);
+
+      return {
+        ah: -(vh / speed) * dragForce,
+        ay: -(vy / speed) * dragForce - inputs.gravityTicks
+      };
+    }
+
+    function simulateAtDistance(horizontalDistance, heightDifference, elevation, inputs, keepPath = false) {
+      if (inputs.velocity <= 0 || inputs.gravityTicks <= 0) {
+        return null;
+      }
+
+      if (horizontalDistance < 1.0E-7) {
+        return null;
+      }
+
+      const speedPerTick = inputs.velocity / TICKS_PER_SECOND;
+      let horizontal = 0;
+      let y = 0;
+      let vh = Math.cos(elevation) * speedPerTick;
+      let vy = Math.sin(elevation) * speedPerTick;
+      let apexGain = 0;
+      const points = keepPath ? [{ horizontal: 0, y: 0 }] : null;
+
+      for (let tick = 0; tick < MAX_SIM_TICKS; tick++) {
+        const a = acceleration(vh, vy, inputs);
+        const nextHorizontal = horizontal + vh + 0.5 * a.ah;
+        const nextY = y + vy + 0.5 * a.ay;
+
+        if (keepPath) {
+          points.push({ horizontal: nextHorizontal, y: nextY });
+        }
+
+        apexGain = Math.max(apexGain, nextY);
+
+        if (nextHorizontal >= horizontalDistance && nextHorizontal > horizontal) {
+          const fraction = (horizontalDistance - horizontal) / (nextHorizontal - horizontal);
+          const impactY = y + (nextY - y) * fraction;
+          if (keepPath && points.length > 0) {
+            points[points.length - 1] = { horizontal: horizontalDistance, y: impactY };
+          }
+          return {
+            reached: true,
+            error: impactY - heightDifference,
+            yAtTarget: impactY,
+            time: (tick + fraction) / TICKS_PER_SECOND,
+            apexGain: Math.max(apexGain, impactY),
+            points
+          };
+        }
+
+        vh += a.ah;
+        vy += a.ay;
+        horizontal = nextHorizontal;
+        y = nextY;
+
+        if (!Number.isFinite(horizontal) || !Number.isFinite(y) || vh <= 1.0E-7 && horizontal < horizontalDistance) {
+          break;
+        }
+      }
+
       return null;
     }
-    function getBreathShapeBySub(subName){
-      if(data.breathTypes.cone.includes(subName)) return 'Kegel-Breath';
-      if(data.breathTypes.beam.includes(subName)) return 'Strahl-Breath';
-      if(data.breathTypes.pressure && data.breathTypes.pressure.includes(subName)) return 'Kugel-Breath';
-      return 'Kein Breath';
+
+    function makeArc(elevation, sim) {
+      const elevationDeg = deg(elevation);
+      return {
+        elevation,
+        elevationDeg,
+        mountPitchDeg: mountPitch(elevationDeg),
+        inMountRange: inMountElevationRange(elevationDeg),
+        time: sim.time,
+        apexGain: sim.apexGain
+      };
     }
-    function getTailDie(die){
-      const map = {2:3, 6:8, 8:10, 10:12, 12:20};
-      return map[die] || die;
-    }
-    function invertDice(count, die){
-      return { count: die, die: count };
-    }
-    function evaluateChargeFormula(formula, level){
-      // Neue Formel: (Lv * 0,1) * (Bonus * 0,1 + 1) + Lv
-      // Rundung: .1-.4 abrunden, .5-.9 aufrunden
-      const match = formula.match(/lvl \+ (\d+)/i);
-      if(!match){
-        return level;
+
+    function solveAngles(horizontalDistance, heightDifference, inputs) {
+      const samples = [];
+
+      for (let angleDeg = SOLVER_MIN_DEG; angleDeg <= SOLVER_MAX_DEG + 1.0E-9; angleDeg += SOLVER_STEP_DEG) {
+        const elevation = rad(angleDeg);
+        const sim = simulateAtDistance(horizontalDistance, heightDifference, elevation, inputs);
+        samples.push({ elevation, error: sim?.error ?? null, sim });
       }
-      const bonus = Number(match[1]);
-      const raw = (level * 0.1) * (bonus * 0.1 + 1) + level;
-      const frac = raw - Math.floor(raw);
-      const rounded = frac < 0.5 ? Math.floor(raw) : Math.ceil(raw);
-      return rounded;
+
+      const roots = [];
+      for (let i = 1; i < samples.length; i++) {
+        const a = samples[i - 1];
+        const b = samples[i];
+
+        if (a.sim && Math.abs(a.error) < 1.0E-4) {
+          roots.push(refineRoot(horizontalDistance, heightDifference, a.elevation, a.elevation, inputs));
+          continue;
+        }
+
+        if (a.sim && b.sim && (a.error === 0 || b.error === 0 || Math.sign(a.error) !== Math.sign(b.error))) {
+          roots.push(refineRoot(horizontalDistance, heightDifference, a.elevation, b.elevation, inputs));
+          continue;
+        }
+
+        if (a.sim && !b.sim) {
+          roots.push(refineReachabilityEdgeRoot(horizontalDistance, heightDifference, a.elevation, b.elevation, inputs));
+        } else if (!a.sim && b.sim) {
+          roots.push(refineReachabilityEdgeRoot(horizontalDistance, heightDifference, b.elevation, a.elevation, inputs));
+        }
+      }
+
+      const uniqueRoots = roots
+        .filter(Boolean)
+        .sort((a, b) => a.elevation - b.elevation)
+        .filter((root, index, array) => index === 0 || Math.abs(root.elevation - array[index - 1].elevation) > rad(0.03));
+
+      if (uniqueRoots.length === 0) {
+        return {
+          reachable: false,
+          reason: "No firing angle was found for this velocity, gravity, drag, and distance."
+        };
+      }
+
+      return {
+        reachable: true,
+        low: uniqueRoots[0],
+        high: uniqueRoots.length > 1 ? uniqueRoots[uniqueRoots.length - 1] : null
+      };
     }
 
-    function initTabs(){
-      qsa('#mainTabs .tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const tab = btn.dataset.tab;
-          state.mainTab = tab;
-          qsa('#mainTabs .tab-btn').forEach(b => b.classList.toggle('active-btn', b === btn));
-          qsa('.tab-pane').forEach(p => p.classList.remove('active'));
-          qs(`#tab-${tab}`).classList.add('active');
-        });
-      });
+    function refineReachabilityEdgeRoot(horizontalDistance, heightDifference, reachableElevation, missingElevation, inputs) {
+      const startSim = simulateAtDistance(horizontalDistance, heightDifference, reachableElevation, inputs);
+      if (!startSim) {
+        return null;
+      }
 
-      qsa('#hubTabs .subtab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const sub = btn.dataset.subtab;
-          state.hubTab = sub;
-          qsa('#hubTabs .subtab-btn').forEach(b => b.classList.toggle('active-btn', b === btn));
-          qsa('#tab-hub .subtab-pane').forEach(p => p.classList.remove('active'));
-          qs(`#${sub}`).classList.add('active');
-        });
-      });
+      let reachable = reachableElevation;
+      let missing = missingElevation;
+      let edgeSim = startSim;
+
+      for (let i = 0; i < 54; i++) {
+        const mid = (reachable + missing) / 2;
+        const midSim = simulateAtDistance(horizontalDistance, heightDifference, mid, inputs);
+        if (midSim) {
+          reachable = mid;
+          edgeSim = midSim;
+        } else {
+          missing = mid;
+        }
+      }
+
+      if (Math.abs(edgeSim.error) < 1.0E-4) {
+        return makeArc(reachable, edgeSim);
+      }
+
+      if (Math.sign(startSim.error) !== Math.sign(edgeSim.error)) {
+        return refineRoot(
+          horizontalDistance,
+          heightDifference,
+          Math.min(reachableElevation, reachable),
+          Math.max(reachableElevation, reachable),
+          inputs
+        );
+      }
+
+      return null;
     }
 
-    function renderMainElementButtons(){
-      const wrap = qs('#mainElementButtons');
-      wrap.innerHTML = '';
-      Object.keys(data.mainElements).forEach(main => {
-        const btn = document.createElement('button');
-        btn.className = 'chip-btn' + (state.selectedMainElement === main ? ' active-btn' : '');
-        btn.textContent = main;
-        btn.addEventListener('click', () => {
-          state.selectedMainElement = main;
-          const firstSub = Object.keys(data.mainElements[main].subs)[0];
-          state.selectedSubElement = firstSub;
-          renderMainElementButtons();
-          renderSubElementButtons();
-          renderSubElementDetail();
-        });
-        wrap.appendChild(btn);
-      });
+    function refineRoot(horizontalDistance, heightDifference, lowElevation, highElevation, inputs) {
+      if (Math.abs(highElevation - lowElevation) < 1.0E-12) {
+        const sim = simulateAtDistance(horizontalDistance, heightDifference, lowElevation, inputs);
+        return sim ? makeArc(lowElevation, sim) : null;
+      }
+
+      let lo = lowElevation;
+      let hi = highElevation;
+      let loSim = simulateAtDistance(horizontalDistance, heightDifference, lo, inputs);
+      let hiSim = simulateAtDistance(horizontalDistance, heightDifference, hi, inputs);
+
+      if (!loSim || !hiSim) {
+        return null;
+      }
+
+      for (let i = 0; i < 36; i++) {
+        const mid = (lo + hi) / 2;
+        const midSim = simulateAtDistance(horizontalDistance, heightDifference, mid, inputs);
+        if (!midSim) {
+          break;
+        }
+
+        if (Math.abs(midSim.error) < 1.0E-5) {
+          return makeArc(mid, midSim);
+        }
+
+        if (Math.sign(loSim.error) === Math.sign(midSim.error)) {
+          lo = mid;
+          loSim = midSim;
+        } else {
+          hi = mid;
+          hiSim = midSim;
+        }
+      }
+
+      const elevation = (lo + hi) / 2;
+      const sim = simulateAtDistance(horizontalDistance, heightDifference, elevation, inputs);
+      return sim ? makeArc(elevation, sim) : null;
     }
 
-    function renderSubElementButtons(){
-      const wrap = qs('#subElementButtons');
-      wrap.innerHTML = '';
-      Object.keys(data.mainElements[state.selectedMainElement].subs).forEach(sub => {
-        const btn = document.createElement('button');
-        btn.className = 'chip-btn' + (state.selectedSubElement === sub ? ' active-btn' : '');
-        btn.textContent = sub;
-        btn.addEventListener('click', () => {
-          state.selectedSubElement = sub;
-          renderSubElementButtons();
-          renderSubElementDetail();
-        });
-        wrap.appendChild(btn);
-      });
+    function directionVector(dx, dz, elevation) {
+      const horizontal = Math.hypot(dx, dz);
+      const ux = horizontal > 1e-7 ? dx / horizontal : 0;
+      const uz = horizontal > 1e-7 ? dz / horizontal : 0;
+      const cos = Math.cos(elevation);
+      return {
+        x: ux * cos,
+        y: Math.sin(elevation),
+        z: uz * cos
+      };
     }
 
-    function renderSubElementDetail(){
-      const box = qs('#subElementDetail');
-      const info = getSubInfo(state.selectedMainElement, state.selectedSubElement);
-      if(!info){ box.innerHTML = '<h3>Kein Eintrag</h3>'; return; }
-      box.innerHTML = `
-        <h3>${state.selectedSubElement}</h3>
-        <div class="detail-meta">
-          <span class="pill">Main Element: ${state.selectedMainElement}</span>
-          <span class="pill">Sub-Element: ${state.selectedSubElement}</span>
-          <span class="pill">Attack Type: ${info.shape}</span>
-          <span class="pill">Resistance: ${info.resistance}</span>
-        </div>
-        <div class="stat-list">
-          <div class="stat-line"><div class="stat-name">Damage Theme</div><div>${info.theme}</div></div>
-          <div class="stat-line"><div class="stat-name">Breath Shape / Attack Type</div><div>${info.shape}</div></div>
-          <div class="stat-line"><div class="stat-name">Resistance</div><div>${info.resistance}</div></div>
-          <div class="stat-line"><div class="stat-name">Beschreibung</div><div><ul>${info.desc.map(d => `<li>${d}</li>`).join('')}</ul></div></div>
-        </div>
-      `;
+    function solveFromSource(source, inputs) {
+      const dx = inputs.target.x - source.x;
+      const dy = inputs.target.y - source.y;
+      const dz = inputs.target.z - source.z;
+      const horizontal = Math.hypot(dx, dz);
+      const angles = solveAngles(horizontal, dy, inputs);
+      return { source, dx, dy, dz, horizontal, angles };
     }
 
-    function renderHybrids(){
-      const list = qs('#hybridList');
-      list.innerHTML = '';
-      Object.keys(data.hybrids).forEach(name => {
-        const item = document.createElement('div');
-        item.className = 'list-item' + (state.selectedHybrid === name ? ' active' : '');
-        item.innerHTML = `<strong>${name}</strong><span>${data.hybrids[name].role}</span>`;
-        item.addEventListener('click', () => {
-          state.selectedHybrid = name;
-          renderHybrids();
-          renderHybridDetail();
-        });
-        list.appendChild(item);
-      });
-      renderHybridDetail();
+    function selectedArc(angles, preferred) {
+      if (!angles?.reachable) {
+        return null;
+      }
+      return preferred === "high" ? angles.high : angles.low;
     }
 
-    function renderHybridDetail(){
-      const box = qs('#hybridDetail');
-      const entry = data.hybrids[state.selectedHybrid];
-      if(!entry){ box.innerHTML = '<h3>Kein Hybrid gewählt</h3>'; return; }
-      box.innerHTML = `
-        <h3>${state.selectedHybrid}</h3>
-        <div class="detail-meta">
-          <span class="pill">Used Elements: ${entry.elements}</span>
-          <span class="pill">Role: ${entry.role}</span>
-          <span class="pill">Keine Mutationen</span>
-          <span class="pill">Keine Habitatsvorteile</span>
-        </div>
-        <ul>${entry.desc.map(d => `<li>${d}</li>`).join('')}</ul>
-      `;
+    function arcForMuzzleIteration(angles, preferred) {
+      if (!angles?.reachable) {
+        return null;
+      }
+      return preferred === "high" ? (angles.high || angles.low) : angles.low;
     }
 
-    function renderMutationTables(){
-      const wrap = qs('#mutationTables');
-      wrap.innerHTML = '';
-      Object.entries(data.mutations).forEach(([element, rows]) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        let bodyRows = rows.map(row => {
-          const num = row.split(' ')[0];
-          const rest = row.slice(num.length + 1);
-          const parts = rest.split(' = ');
-          const name = parts[0] || '';
-          const effect = parts[1] || '';
-          return `<tr><td>${num}</td><td>${name}</td><td>${effect}</td></tr>`;
-        }).join('');
-        card.innerHTML = `
-          <h3>${element} Mutationen</h3>
-          <table>
-            <thead><tr><th>d20</th><th>Name</th><th>Effekt</th></tr></thead>
-            <tbody>${bodyRows}</tbody>
-          </table>
-        `;
-        wrap.appendChild(card);
-      });
+    function solveWithMuzzleOffset(inputs) {
+      const base = baseSource(inputs);
+      let source = { ...base };
+      let solved = null;
+      const iterations = inputs.useBarrelLength && inputs.barrelLength > 0 ? 7 : 1;
+
+      for (let i = 0; i < iterations; i++) {
+        solved = solveFromSource(source, inputs);
+        const arc = arcForMuzzleIteration(solved.angles, inputs.preferredArc);
+        if (!arc || !inputs.useBarrelLength || inputs.barrelLength <= 0) {
+          break;
+        }
+
+        const dir = directionVector(solved.dx, solved.dz, arc.elevation);
+        source = {
+          x: base.x + dir.x * inputs.barrelLength,
+          y: base.y + dir.y * inputs.barrelLength,
+          z: base.z + dir.z * inputs.barrelLength
+        };
+      }
+
+      return solveFromSource(source, inputs);
     }
 
-    function renderGrowthButtons(){
-      const wrap = qs('#growthRoleButtons');
-      wrap.innerHTML = '';
-      ['Attacker','Tanker','Sprinter'].forEach(role => {
-        const btn = document.createElement('button');
-        btn.className = 'role-btn' + (state.selectedGrowthRole === role ? ' active-btn' : '');
-        btn.textContent = role;
-        btn.addEventListener('click', () => {
-          state.selectedGrowthRole = role;
-          renderGrowthButtons();
-          renderGrowthDisplay();
-        });
-        wrap.appendChild(btn);
-      });
+    function setStatus(node, text, kind) {
+      node.textContent = text;
+      node.classList.toggle("ok", kind === "ok");
+      node.classList.toggle("bad", kind === "bad");
     }
 
-    function renderGrowthDisplay(){
-      const box = qs('#growthDisplay');
-      const role = state.selectedGrowthRole;
-      const sizeData = data.sizes[role];
-      const rows = Object.entries(sizeData).map(([age, info]) => {
-        const chargeFormula = data.charges[age][role];
-        const match = String(chargeFormula).match(/lvl \+ (\d+)/i);
-        const bonus = match ? Number(match[1]) : 0;
-        return `<tr>
-          <td>${age}</td>
-          <td>${info.years}</td>
-          <td>${info.length} ft</td>
-          <td>${info.height}</td>
-          <td>${info.wingspan} ft</td>
-          <td>${bonus}</td>
-        </tr>`;
-      }).join('');
-      box.innerHTML = `
-        <table>
-          <thead><tr><th>Alter</th><th>Jahre</th><th>Länge</th><th>Höhe</th><th>Flügelspannweite</th><th>Charges</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      `;
-    }
-
-    function populateBasicSelects(){
-      const ageSelects = ['#ageSelect','#coreAge'];
-      ageSelects.forEach(sel => {
-        const el = qs(sel);
-        el.innerHTML = Object.keys(data.ages).map(a => `<option>${a}</option>`).join('');
-        if(sel === '#ageSelect') el.value = 'Adult';
-        if(sel === '#coreAge') el.value = 'Adult';
-      });
-
-      const typeSelects = ['#typeSelect','#coreType'];
-      typeSelects.forEach(sel => {
-        const el = qs(sel);
-        el.innerHTML = Object.keys(data.ddd).map(t => `<option>${t}</option>`).join('');
-        if(sel === '#typeSelect') el.value = 'Attacker';
-        if(sel === '#coreType') el.value = 'Attacker';
-      });
-
-      const mainSelect = qs('#mainElementSelect');
-      mainSelect.innerHTML = Object.keys(data.mainElements).map(m => `<option>${m}</option>`).join('');
-      mainSelect.value = 'Fire';
-
-      const hybridSelect = qs('#hybridSelect');
-      hybridSelect.innerHTML = Object.keys(data.hybrids).map(h => `<option>${h}</option>`).join('');
-      hybridSelect.value = 'Steam Dragon';
-
-      updateSubElementSelect();
-      renderMutationSelector();
-    }
-
-    function updateSubElementSelect(){
-      const main = qs('#mainElementSelect').value;
-      const subSelect = qs('#subElementSelect');
-      subSelect.innerHTML = Object.keys(data.mainElements[main].subs).map(s => `<option>${s}</option>`).join('');
-      const first = Object.keys(data.mainElements[main].subs)[0];
-      subSelect.value = first;
-      renderMutationSelector();
-    }
-
-    function renderMutationSelector(){
-      const container = qs('#mutationSelector');
-      const main = qs('#mainElementSelect').value;
-      const relevant = data.damageRelevantMutations[main] || {};
-      container.innerHTML = '';
-      const entries = Object.entries(relevant);
-      if(entries.length === 0){
-        container.innerHTML = '<div class="small">Für dieses Element gibt es im Rechner keine direkt berechneten Mutationen.</div>';
+    function updateArc(prefix, arc, sourceY) {
+      if (!arc) {
+        clearArc(prefix);
         return;
       }
-      entries.forEach(([name, info], idx) => {
-        const label = document.createElement('label');
-        label.className = 'check';
-        label.innerHTML = `<input type="checkbox" value="${name}" ${idx === 0 ? '' : ''} /><span><strong>${name}</strong><br><span class="tiny">${info.note}</span></span>`;
-        container.appendChild(label);
-      });
+
+      el[`${prefix}Status`].textContent = arc.inMountRange ? "OK" : "Limit";
+      el[`${prefix}Status`].classList.toggle("bad", !arc.inMountRange);
+      el[`${prefix}Status`].classList.toggle("ok", arc.inMountRange);
+      el[`${prefix}Elevation`].textContent = `${format(arc.elevationDeg)} deg`;
+      el[`${prefix}Pitch`].textContent = `${format(arc.elevationDeg)} deg`;
+      el[`${prefix}Time`].textContent = `${format(arc.time)} s`;
+      el[`${prefix}Apex`].textContent = `Y ${format(sourceY + arc.apexGain, 2)}`;
     }
 
-    function updateFormConstraints(){
-      const form = qs('#formSelect').value;
-      const attackType = qs('#attackType');
-      Array.from(attackType.options).forEach(opt => {
-        if(form === 'Human Form'){
-          opt.disabled = !(opt.value === 'Breath Attack' || opt.value === 'No-Breath Spezialattacke');
-        } else {
-          opt.disabled = false;
-        }
-      });
-      if(form === 'Human Form' && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType.value)){
-        attackType.value = 'Breath Attack';
-      }
-
-      // Preasure benötigt kein manuelles X; Range wird rein anhand Charges berechnet.
-      // Intentionally no visibility toggles needed.
-      return;
+    function clearArc(prefix) {
+      el[`${prefix}Status`].textContent = "No arc";
+      el[`${prefix}Status`].classList.add("bad");
+      el[`${prefix}Status`].classList.remove("ok");
+      el[`${prefix}Elevation`].textContent = "--";
+      el[`${prefix}Pitch`].textContent = "--";
+      el[`${prefix}Time`].textContent = "--";
+      el[`${prefix}Apex`].textContent = "--";
     }
 
-    function bindCalculatorEvents(){
-      qs('#mainElementSelect').addEventListener('change', () => {
-        updateSubElementSelect();
-        updateFormConstraints();
-      });
-      qs('#subElementSelect').addEventListener('change', () => {
-        updateFormConstraints();
-      });
-      qs('#formSelect').addEventListener('change', () => {
-        updateFormConstraints();
-      });
+    function calculate() {
+      const inputs = readInputs();
+      const solved = solveWithMuzzleOffset(inputs);
+      latestResult = { inputs, solved };
 
-      qs('#dragonKind').addEventListener('change', () => {
-        const hybrid = qs('#dragonKind').value === 'Hybrid-Drache';
-        qsa('.standard-only').forEach(el => el.classList.toggle('hide', hybrid));
-        qsa('.hybrid-only').forEach(el => el.classList.toggle('hide', !hybrid));
-        updateFormConstraints();
-      });
-
-      qs('#calcDamageBtn').addEventListener('click', calculateDamage);
-      qs('#calcCoreBtn').addEventListener('click', calculateCoreStats);
-      qs('#calcScaleBtn').addEventListener('click', calculateScaleHelper);
-      
-      qs('#clearHistoryBtn').addEventListener('click', () => {
-        state.damageHistory = [];
-        qs('#damageHistory').innerHTML = '';
-      });
-    }
-
-    function loadHistoryEntry(entry) {
-      qs('#damageMetrics').innerHTML = entry.metricsHtml;
-      qs('#damageFormula').innerHTML = entry.formulaHtml;
-    }
-
-    function calculateDamage(){
-      const dragonKind = qs('#dragonKind').value;
-      const form = qs('#formSelect').value;
-      const attackType = qs('#attackType').value;
-      const age = qs('#ageSelect').value;
-      const type = qs('#typeSelect').value;
-      const mainElement = dragonKind === 'Standard-Drache' ? qs('#mainElementSelect').value : null;
-      const subElement = dragonKind === 'Standard-Drache' ? qs('#subElementSelect').value : null;
-      const hybridDragon = dragonKind === 'Hybrid-Drache' ? qs('#hybridSelect').value : null;
-      const chargesUsed = clamp(Number(qs('#chargesUsed').value || 0), 0, 10);
-      const habitatActive = dragonKind === 'Standard-Drache' && qs('#habitatActive').value === 'ja';
-      const level = clamp(Number(qs('#playerLevel').value || 1), 1, 20);
-      const strMod = Number(qs('#strMod').value || 0);
-
-      let selectedMutationNames = [];
-      if(dragonKind === 'Standard-Drache'){
-        selectedMutationNames = qsa('#mutationSelector input:checked').map(el => el.value);
+      if (!solved || !solved.angles.reachable) {
+        const reason = solved?.angles?.reason || "No valid solution.";
+        setStatus(el.status, "Check inputs", "bad");
+        setStatus(el.resultStatus, "Unreachable", "bad");
+        el.yawValue.textContent = "--";
+        el.bearingValue.textContent = "--";
+        el.distanceValue.textContent = `${format(solved?.horizontal ?? 0, 2)} m`;
+        el.heightValue.textContent = `${signedFormat(solved?.dy ?? 0, 2)} m`;
+        el.muzzleValue.textContent = `X ${format(solved?.source?.x ?? inputs.mount.x, 2)}, Y ${format(solved?.source?.y ?? inputs.mount.y, 2)}, Z ${format(solved?.source?.z ?? inputs.mount.z, 2)}`;
+        clearArc("low");
+        clearArc("high");
+        el.note.innerHTML = `<span class="warning">${reason}</span>`;
+        drawTrajectory(inputs, solved);
+        return;
       }
 
-      const ageInfo = data.ages[age];
-      const getModifiedDie = (baseDie, dragonType) => {
-        let modifier = 0;
-        if(dragonType === 'Sprinter') modifier = 0;
-        else if(dragonType === 'Attacker') modifier = 2;
-        else if(dragonType === 'Tanker') modifier = -2;
-        return Math.max(1, baseDie + modifier);
-      };
-      let basis = 0;
-      let avgBasis = 0;
-      let formulaText = '';
-      let damageType = 'Unknown';
-      let shape = '-';
-      let range = '-';
-      let flatBonus = 0;
-      let percentBonus = 0;
-      let extraFlatAfter = 0;
-      const notes = [];
-      let diceDisplay = '';
-      let rollInfo;
+      const yaw = mountYaw(solved.dx, solved.dz);
+      const selected = selectedArc(solved.angles, inputs.preferredArc);
+      const alternate = inputs.preferredArc === "high" ? solved.angles.low : solved.angles.high;
+      const selectedOk = Boolean(selected?.inMountRange);
+      setStatus(el.status, "Calculated", selectedOk ? "ok" : "bad");
+      setStatus(el.resultStatus, selectedOk ? "Reachable" : (selected ? "Angle limit" : `No ${inputs.preferredArc} arc`), selectedOk ? "ok" : "bad");
+      el.yawValue.textContent = `${format(yaw)} deg`;
+      el.bearingValue.textContent = selected ? `${format(selected.elevationDeg)} deg` : "--";
+      el.distanceValue.textContent = `${format(solved.horizontal, 2)} m`;
+      el.heightValue.textContent = `${signedFormat(solved.dy, 2)} m`;
+      el.muzzleValue.textContent = `X ${format(solved.source.x, 2)}, Y ${format(solved.source.y, 2)}, Z ${format(solved.source.z, 2)}`;
+      updateArc("low", solved.angles.low, solved.source.y);
+      updateArc("high", solved.angles.high, solved.source.y);
 
-      const isHybrid = dragonKind === 'Hybrid-Drache';
-      const isHumanForm = form === 'Human Form';
-      const isPreasure = !isHybrid && subElement === 'Preasure';
-      if(isHumanForm && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType)){
-        notes.push('Human Form erlaubt nur Breath Attack oder No-Breath Spezialattacke. Berechnung wird eingeschränkt.');
-      }
-      let usedMainForHabitat = mainElement;
-      let usedSub = subElement;
-      if(isHybrid){
-        const hybridEntry = data.hybrids[hybridDragon];
-        notes.push('Hybrid-Drache: keine Mutationen, keine Habitatsvorteile.');
-        usedMainForHabitat = null;
-        usedSub = hybridEntry ? hybridDragon : null;
-      }
-
-      const physicalDamageTypeMap = {
-        'Schlagen / Slash':'Slashing',
-        'Bite':'Piercing',
-        'Schwanzattacke':'Bludgeoning'
-      };
-
-      if(attackType === 'Schlagen / Slash' || attackType === 'Bite'){
-        const die = getModifiedDie(ageInfo.physicalDie, type);
-        const count = 3;
-        rollInfo = rollDice(count, die);
-        const baseRoll = rollInfo.total;
-        const levelBonus = level + (level / 2);
-        const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
-        basis = halfRoll + levelBonus + strMod;
-        avgBasis = (level >= 8 ? count * averageDie(die) : (count * averageDie(die)) / 2) + levelBonus + strMod;
-        formulaText = `((roll(${count}d${die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}) + STR (${strMod}))`;
-        damageType = physicalDamageTypeMap[attackType];
-        diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
-      } else if(attackType === 'Schwanzattacke'){
-        const die = getModifiedDie(getTailDie(ageInfo.physicalDie), type);
-        const count = 3;
-        rollInfo = rollDice(count, die);
-        const baseRoll = rollInfo.total;
-        const levelBonus = level + (level / 2);
-        const halfRoll = level >= 8 ? baseRoll : baseRoll / 2;
-        basis = halfRoll + levelBonus + strMod;
-        avgBasis = (level >= 8 ? count * averageDie(die) : (count * averageDie(die)) / 2) + levelBonus + strMod;
-        formulaText = `((roll(${count}d${die}) ${level >= 8 ? '' : '/2'}) + (Level + Level/2) (${levelBonus.toFixed(1)}) + STR (${strMod}))`;
-        damageType = 'Bludgeoning';
-        diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
-      } else if(attackType === 'Breath Attack'){
-        let chosenSubName = subElement;
-        if(isHybrid){
-          const hybridName = hybridDragon;
-          notes.push(`Hybrid-Angriff: ${hybridName} nutzt kein Habitat und keine Mutationen.`);
-          shape = data.hybridShapes[hybridName] || 'Unbekannt';
-          damageType = 'Elemental';
-        } else {
-          const subInfo = getSubInfo(mainElement, subElement);
-          shape = subInfo?.shape || getBreathShapeBySub(subElement) || 'Unbekannt';
-          damageType = mainElement === 'Natur' ? 'Nature / Poison' : mainElement;
-        }
-        let die = getModifiedDie(ageInfo.elementalDie, type);
-        let count;
-        let countExact;
-        let divisor = isHumanForm ? 4 : 2.5;
-        let multiplier = 1;
-        let levelPart = level * (level / 2);
-        let isPlasma = !isHybrid && subElement === 'Plasma Core' && mainElement === 'Lightning';
-        let isPressure = !isHybrid && subElement === 'Preasure' && mainElement === 'Natur';
-        if(isPlasma){
-          countExact = 3 + level / 4;
-          count = Math.floor(countExact);
-          multiplier = 1 + (0.25 * Math.min(chargesUsed, 4));
-        } else if(isPressure){
-          countExact = level / 4 + 3;
-          count = Math.floor(countExact);
-          divisor = isHumanForm ? 5 : 3;
-          levelPart = level * (level / 3);
-        } else {
-          count = 3;
-          countExact = 3;
-        }
-        rollInfo = rollDice(count, die);
-        let baseRoll = rollInfo.total;
-        basis = (baseRoll / divisor) + levelPart * multiplier;
-        avgBasis = (countExact * averageDie(die) / divisor) + levelPart * multiplier;
-        formulaText = `((roll(${count}d${die}) / ${divisor}) + (Level × ${isPressure ? '(Level / 3)' : '(Level / 2)'}) (${levelPart.toFixed(1)}) ${multiplier !== 1 ? `× ${multiplier.toFixed(2)}` : ''})`;
-        if(isPlasma){
-          range = '15 ft';
-          notes.push(`Plasma Core: Kugel (Sphere) bewegt sich ${chargesUsed} Runden à 15 ft.`);
-        } else {
-          // Fallback: ensure we always have a valid Breath shape for Range calculation
-          if(shape === '-' || shape === 'Unbekannt'){
-            shape = getBreathShapeBySub(subElement);
-          }
-          if(shape === 'Kegel-Breath'){
-            range = `${Math.min(chargesUsed * 10, 100)} ft`;
-          } else if(shape === 'Strahl-Breath'){
-            range = `${Math.min(chargesUsed * 20, 200)} ft`;
-          } else if(shape === 'Kugel-Breath'){
-            const totalDistance = isHumanForm ? (chargesUsed / 2) * 15 : chargesUsed * 15;
-            const x = totalDistance;
-            const y = 0;
-            const knockbackRaw = x / 2 + y;
-            const knockback = roundUpToNextMultipleOf5(knockbackRaw);
-            range = `${totalDistance} ft`;
-            notes.push(`Preasure Reichweite: ${totalDistance} ft, Knockback: raw ${knockbackRaw.toFixed(2)} → ${knockback} ft`);
-          } else if(shape === 'Kein Breath'){
-            range = 'N/A';
-          } else {
-            range = '-';
-          }
-        }
-        diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
-      } else if(attackType === 'No-Breath Spezialattacke'){
-        if(isHybrid){
-          notes.push('No-Breath Spezialattacke sollte bei Hybriden nur genutzt werden, wenn der DM es erlaubt.');
-        }
-        const allowedNoBreath = ['Heat','Static Field','Pulse','Thunderclap','Conductor','Bone','Razorleaf','Rootbind'];
-        if(!isHybrid && !allowedNoBreath.includes(subElement)){
-          notes.push('Gewähltes Sub-Element ist eigentlich kein erlaubter No-Breath-Drache.');
-        }
-        let divisor = isHumanForm ? 4 : 2.5;
-        let count = getModifiedDie(ageInfo.elementalDie, type); // AW
-        let die = Math.floor(3 + level / 4);
-        rollInfo = rollDice(count, die);
-        let baseRoll = rollInfo.total;
-        let levelPart = level * (level / 2);
-        basis = (baseRoll / divisor) + levelPart;
-        avgBasis = (count * averageDie(die) / divisor) + levelPart;
-        formulaText = `((roll(${count}d${die}) / ${divisor}) + (Level × (Level / 2)) (${levelPart.toFixed(1)}))`;
-        damageType = isHybrid ? 'Special' : (mainElement === 'Natur' ? 'Nature / Special' : `${mainElement} Special`);
-        shape = 'Kein Breath';
-        range = 'N/A';
-        diceDisplay = `${count}d${die} → [${rollInfo.rolls.join(', ')}]`;
-      }
-
-      if(isHumanForm && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType)){
-        basis = 0;
-        avgBasis = 0;
-        diceDisplay = '-';
-        shape = '-';
-        range = '-';
-        damageType = 'Human Form restrict';
-        notes.push('Human Form kann keine physischen Angriffstypen ausführen.');
-      }
-
-      if(isHybrid){
-        // Keine Habitatsvorteile bei Hybriden
-      }
-
-      if(!isHybrid && habitatActive && (attackType === 'Breath Attack' || attackType === 'No-Breath Spezialattacke')){
-        const bonus = data.habitats[usedMainForHabitat]?.damageBonus || 0;
-        if(bonus > 0){
-          percentBonus += bonus;
-          notes.push(`Habitat aktiv: +${bonus * 100}% auf passenden Elementarangriff.`);
-        } else if(usedMainForHabitat === 'Water'){
-          notes.push('Water-Habitat gibt keinen rohen Damage-Prozentbonus.');
-        }
-      }
-
-      if(!isHybrid){
-        const relevant = data.damageRelevantMutations[mainElement] || {};
-        selectedMutationNames.forEach(name => {
-          const mut = relevant[name];
-          if(!mut) return;
-          if(mut.type === 'percentBreath' && attackType === 'Breath Attack'){
-            percentBonus += mut.value;
-          } else if(mut.type === 'percentPhysical' && ['Schlagen / Slash','Bite','Schwanzattacke'].includes(attackType)){
-            percentBonus += mut.value;
-          } else if(mut.type === 'percentMelee' && ['Schlagen / Slash','Bite','Schwanzattacke'].includes(attackType)){
-            percentBonus += mut.value;
-          } else if(mut.type === 'percentHabitatDependent' && habitatActive){
-            percentBonus += mut.value;
-          }
-          notes.push(mut.note);
-        });
-      }
-
-      const livingLightningActive = selectedMutationNames.includes('Living Lightning') && attackType === 'Breath Attack';
-      const finalMultiplier = livingLightningActive ? 2 : 1;
-      let formDamageFactor = 1;
-      if(isHumanForm && !['Breath Attack','No-Breath Spezialattacke'].includes(attackType)){
-        formDamageFactor = 0.5;
-        notes.push('Human Form Effekt: Physischer Schaden /2.');
-      }
-      const finalDamage = floor((basis + flatBonus) * (1 + percentBonus) * formDamageFactor) * finalMultiplier + extraFlatAfter;
-      const avgFinalDamage = floor((avgBasis + flatBonus) * (1 + percentBonus) * formDamageFactor) * finalMultiplier + extraFlatAfter;
-      if(livingLightningActive){
-        notes.push('Living Lightning: Finale Schaden ×2');
-      }
-
-      const metrics = [
-        {label:'Finaler Schaden', value:String(finalDamage)},
-        {label:'Basis-Schaden', value:String(basis)},
-        {label:'Durchschnitt Basis', value:String(round1(avgBasis))},
-        {label:'Würfelwurf', value:diceDisplay || '-'},
-        {label:'Damage Type', value:damageType},
-        {label:'Mutations-Bonus', value:`+${Math.round(percentBonus*100)}% gesamt`},
-        {label:'Habitat-Bonus', value: habitatActive && !isHybrid ? (usedMainForHabitat === 'Water' ? '0% (Water special)' : `${Math.round((data.habitats[usedMainForHabitat]?.damageBonus || 0) * 100)}%`) : '0%'},
-        {label:'Shape', value:shape},
-        {label:'Range', value:range},
-        {label:'Form', value: form}
-      ];
-
-      qs('#damageMetrics').innerHTML = metrics.map(m => `
-        <div class="metric">
-          <div class="label">${m.label}</div>
-          <div class="value" style="font-size:${m.label === 'Würfelwurf' ? '15px':'24px'}">${m.value}</div>
-        </div>
-      `).join('');
-
-      const finalFormulaText = livingLightningActive
-        ? `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt) × ${formDamageFactor}) × 2 + ExtraFlatAfter`
-        : `floor((Basis + FlatBonus) × (1 + ProzentBonusGesamt) × ${formDamageFactor}) + ExtraFlatAfter`;
-
-      qs('#damageFormula').innerHTML = `
-        <div class="notice"><strong>Finale Formel:</strong> ${finalFormulaText}</div>
-        <div style="margin-top:12px">
-          <div><strong>Eingesetzte Basisformel:</strong> ${formulaText}</div>
-          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
-          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
-        </div>
-        <div style="margin-top:12px">
-          <strong>Hinweise / Notizen:</strong>
-          <ul>${(notes.length ? notes : ['Keine zusätzlichen Hinweise.']).map(n => `<li>${n}</li>`).join('')}</ul>
-        </div>
-      `;
-
-      const historyEntry = {
-        title: `${dragonKind} · ${attackType}`,
-        text: `${age} ${type} · Final ${finalDamage} · Basis ${basis} · ${damageType}${range !== '-' ? ` · ${shape} ${range}` : ''}`,
-        metricsHtml: metrics.map(m => `
-        <div class="metric">
-          <div class="label">${m.label}</div>
-          <div class="value" style="font-size:${m.label === 'Würfelwurf' ? '15px':'24px'}">${m.value}</div>
-        </div>
-      `).join(''),
-        formulaHtml: `
-        <div class="notice"><strong>Finale Formel:</strong> ${finalFormulaText}</div>
-        <div style="margin-top:12px">
-          <div><strong>Eingesetzte Basisformel:</strong> ${formulaText}</div>
-          <div><strong>Ausgerechnet:</strong> floor((${basis} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${finalDamage}</strong></div>
-          <div><strong>Durchschnittsschaden:</strong> floor((${round1(avgBasis)} + ${flatBonus}) × (1 + ${percentBonus.toFixed(2)}) × ${formDamageFactor})${livingLightningActive ? ' × 2' : ''} + ${extraFlatAfter} = <strong>${avgFinalDamage}</strong></div>
-        </div>
-        <div style="margin-top:12px">
-          <strong>Hinweise / Notizen:</strong>
-          <ul>${(notes.length ? notes : ['Keine zusätzlichen Hinweise.']).map(n => `<li>${n}</li>`).join('')}</ul>
-        </div>
-      `
-      };
-      state.damageHistory.unshift(historyEntry);
-      state.damageHistory = state.damageHistory.slice(0, 12);
-      qs('#damageHistory').innerHTML = state.damageHistory.map((item, index) => `<div class="history-item" data-index="${index}" style="cursor:pointer;"><strong>${item.title}</strong><br>${item.text}</div>`).join('');
-
-      // Add click listeners to history items
-      qsa('#damageHistory .history-item').forEach(el => {
-        el.addEventListener('click', () => {
-          const index = el.dataset.index;
-          const entry = state.damageHistory[index];
-          if (entry) {
-            loadHistoryEntry(entry);
-          }
-        });
-      });
-    }
-
-    function calculateCoreStats(){
-      const age = qs('#coreAge').value;
-      const type = qs('#coreType').value;
-      const level = clamp(Number(qs('#coreLevel').value || 1), 1, 20);
-      const hpMode = qs('#hpMode').value;
-      const ageInfo = data.ages[age];
-      const sizeInfo = data.sizes[type][age];
-      const chargeFormula = data.charges[age][type];
-
-      let hpDiceCount = 0;
-      if(type === 'Attacker') hpDiceCount = 3 * level;
-      if(type === 'Tanker') hpDiceCount = 4 * level;
-      if(type === 'Sprinter') hpDiceCount = 2 * level;
-
-      let hp = 0;
-      let hpDetail = '';
-      if(hpMode === 'Durchschnitt'){
-        hp = round1(hpDiceCount * averageDie(ageInfo.elementalDie));
-        hpDetail = `${hpDiceCount} × ${(averageDie(ageInfo.elementalDie)).toFixed(1)} (Ø von d${ageInfo.elementalDie})`;
+      if (!selected) {
+        el.note.textContent = `${inputs.preferredArc === "high" ? "High" : "Low"} arc has no solution for these inputs. ${alternate ? `The other arc is available at pitch ${format(alternate.elevationDeg)} deg.` : "No alternate arc is available."}`;
+      } else if (selected.inMountRange) {
+        el.note.textContent = `Use mount yaw ${format(yaw)} deg clockwise and mount pitch ${format(selected.elevationDeg)} deg. CBC sim uses gravity ${format(inputs.gravityTicks, 3)} blocks/tick^2 and drag ${format(inputs.drag, 3)}.`;
+      } else if (alternate?.inMountRange) {
+        el.note.textContent = `Selected ${inputs.preferredArc} arc needs elevation ${format(selected?.elevationDeg)} deg, outside the mount limit. Switch arc mode to use mount pitch ${format(alternate.elevationDeg)} deg.`;
       } else {
-        const rolled = rollDice(hpDiceCount, ageInfo.elementalDie);
-        hp = rolled.total;
-        hpDetail = `${hpDiceCount}d${ageInfo.elementalDie} → [${rolled.rolls.slice(0,40).join(', ')}${rolled.rolls.length > 40 ? ', ...' : ''}]`;
+        el.note.textContent = `Both arcs are outside the mount elevation limit of ${format(MIN_ELEVATION_DEG)} deg to ${format(MAX_ELEVATION_DEG)} deg.`;
       }
 
-      let runSpeed = 0;
-      let flySpeed = 0;
-      if(type === 'Sprinter'){
-        runSpeed = sizeInfo.length * 2;
-        flySpeed = sizeInfo.wingspan * 2.5;
-      } else if(type === 'Tanker'){
-        runSpeed = round1(sizeInfo.length * 0.6666);
-        flySpeed = round1(sizeInfo.wingspan * 1.3333);
-      } else {
-        runSpeed = sizeInfo.length * 1.5;
-        flySpeed = sizeInfo.wingspan * 2.5;
+      drawTrajectory(inputs, solved);
+    }
+
+    function simulatePath(horizontalDistance, elevation, inputs) {
+      const sim = simulateAtDistance(horizontalDistance, 0, elevation, inputs, true);
+      return sim?.points || [];
+    }
+
+    function drawTrajectory(inputs, solved) {
+      const canvas = el.trajectory;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.fillStyle = "#0c1116";
+      ctx.fillRect(0, 0, w, h);
+
+      if (!solved || !solved.angles.reachable) {
+        drawEmptyState(ctx, w, h, "No reachable trajectory");
+        return;
       }
 
-      const chargeBonus = Number((chargeFormula.match(/lvl \+ (\d+)/i) || [0,0])[1]);
-      const charges = evaluateChargeFormula(chargeFormula, level);
-      const metrics = [
-        {label:'HP', value:String(hp)},
-        {label:'Charges (berechnet)', value:String(charges)},
-        {label:'Charges (Bonus)', value:String(chargeBonus)},
-        {label:'Laufgeschwindigkeit', value:`${round1(runSpeed)} ft`},
-        {label:'Fluggeschwindigkeit', value:`${round1(flySpeed)} ft`},
-        {label:'Typ-Stats', value:data.typeStats[type]},
-        {label:'Alterswürfel', value:`d${ageInfo.elementalDie}`}
-      ];
+      const arcs = [
+        { arc: solved.angles.low, color: "#65d6b5" },
+        { arc: solved.angles.high, color: "#e6bc62" }
+      ].filter((entry) => entry.arc);
 
-      qs('#coreMetrics').innerHTML = metrics.map(m => `
-        <div class="metric">
-          <div class="label">${m.label}</div>
-          <div class="value" style="font-size:${m.label === 'Typ-Stats' ? '17px':'24px'}">${m.value}</div>
-        </div>
-      `).join('');
+      const arcPoints = arcs.map((entry) => ({
+        ...entry,
+        points: simulatePath(solved.horizontal, entry.arc.elevation, inputs)
+      }));
 
-      qs('#coreDetails').innerHTML = `
-        <h3 style="margin-top:0">Details</h3>
-        <div class="stat-list">
-          <div class="stat-line"><div class="stat-name">HP-Formel</div><div>${type === 'Attacker' ? '(3 × lvl)d Alterswürfel' : type === 'Tanker' ? '(4 × lvl)d Alterswürfel' : '(2 × lvl)d Alterswürfel'} → ${hpDetail}</div></div>
-          <div class="stat-line"><div class="stat-name">Charges (berechnet)</div><div>${charges}</div></div>
-        <div class="stat-line"><div class="stat-name">Charges Bonus</div><div>${chargeBonus} (aus ${chargeFormula})</div></div>
-          <div class="stat-line"><div class="stat-name">Körpermaße</div><div>${sizeInfo.length} ft Länge / ${sizeInfo.height} Höhe / ${sizeInfo.wingspan} ft Flügelspannweite</div></div>
-          <div class="stat-line"><div class="stat-name">Typ-Stats</div><div>${data.typeStats[type]}</div></div>
-        </div>
-      `;
+      const allPoints = arcPoints.flatMap((entry) => entry.points);
+      const maxHorizontal = Math.max(solved.horizontal, ...allPoints.map((p) => p.horizontal));
+      const minRelativeY = Math.min(0, solved.dy, ...allPoints.map((p) => p.y));
+      const maxRelativeY = Math.max(0, solved.dy, ...allPoints.map((p) => p.y));
+      const minY = solved.source.y + minRelativeY;
+      const maxY = solved.source.y + maxRelativeY;
+      const padX = 62;
+      const padY = 42;
+      const yRange = Math.max(8, maxY - minY);
+      const xScale = (w - padX * 2) / Math.max(1, maxHorizontal);
+      const yScale = (h - padY * 2) / yRange;
+
+      function sx(horizontal) {
+        return padX + horizontal * xScale;
+      }
+
+      function sy(y) {
+        return h - padY - (y - minY) * yScale;
+      }
+
+      drawGrid(ctx, w, h, padX, padY, minY, maxY, maxHorizontal, sx, sy);
+      for (const entry of arcPoints) {
+        drawArcPath(ctx, entry.points, solved.source.y, entry.color, sx, sy);
+      }
+
+      drawPoint(ctx, sx(0), sy(solved.source.y), "#edf4f6", "Muzzle");
+      drawPoint(ctx, sx(solved.horizontal), sy(inputs.target.y), "#ff7c7c", "Target");
+      el.scaleStatus.textContent = `Range ${format(maxHorizontal, 0)} m`;
     }
 
-    function calculateScaleHelper(){
-      const week = Math.max(1, Number(qs('#scaleWeek').value || 1));
-      const roll = clamp(Number(qs('#scaleRoll').value || 1), 1, 20);
-      const baseAC = 16;
-      let needed = 20;
-      if(week === 1) needed = 2;
-      else if(week === 2) needed = 4;
-      else if(week === 3) needed = 8;
-      else if(week === 4) needed = 16;
-      else needed = 20;
+    function drawGrid(ctx, w, h, padX, padY, minY, maxY, maxHorizontal, sx, sy) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.fillStyle = "#9caeba";
+      ctx.lineWidth = 1;
+      ctx.font = "12px system-ui, sans-serif";
 
-      const success = week >= 5 ? roll === 20 : roll >= needed;
-      const finalAC = success ? baseAC + week : baseAC;
+      for (let i = 0; i <= 5; i++) {
+        const x = padX + (w - padX * 2) * i / 5;
+        ctx.beginPath();
+        ctx.moveTo(x, padY);
+        ctx.lineTo(x, h - padY);
+        ctx.stroke();
+        const distance = maxHorizontal * i / 5;
+        ctx.fillText(`${format(distance, 0)}m`, x - 14, h - 14);
+      }
 
-      const metrics = [
-        {label:'Standard AC', value:String(baseAC)},
-        {label:'Benötigt', value: week >= 5 ? 'nat 20' : `${needed}+`},
-        {label:'Wurf', value:String(roll)},
-        {label:'Ergebnis', value: success ? 'Erfolg' : 'Fehlschlag'},
-        {label:'Neue AC', value:String(finalAC)},
-        {label:'Woche', value:String(week)}
-      ];
+      for (let i = 0; i <= 5; i++) {
+        const yValue = minY + (maxY - minY) * i / 5;
+        const y = sy(yValue);
+        ctx.beginPath();
+        ctx.moveTo(padX, y);
+        ctx.lineTo(w - padX, y);
+        ctx.stroke();
+        ctx.fillText(`Y ${format(yValue, 0)}`, 12, y + 4);
+      }
 
-      qs('#scaleMetrics').innerHTML = metrics.map(m => `
-        <div class="metric">
-          <div class="label">${m.label}</div>
-          <div class="value">${m.value}</div>
-        </div>
-      `).join('');
-
-      qs('#scaleDetails').innerHTML = `
-        <div class="notice"><strong>Regel:</strong> Standard AC 16. Bei Erfolg +1 AC pro bestätigte Woche, bei Fehlschlag zurück auf Standard AC 16.</div>
-        <div style="margin-top:12px">
-          <strong>Auswertung:</strong> Woche ${week} verlangt ${week >= 5 ? 'eine natürliche 20' : needed + '+'}. Der Wurf war ${roll}. <span class="${success ? 'tag-good':'tag-bad'}"><strong>${success ? 'Erfolg' : 'Fehlschlag'}</strong></span>.${success ? ` AC steigt um ${week} (alle Wochen 1-${week} bestanden) → ${finalAC}` : ''}
-        </div>
-      `;
+      ctx.strokeStyle = "rgba(255,255,255,0.28)";
+      ctx.strokeRect(padX, padY, w - padX * 2, h - padY * 2);
+      ctx.restore();
     }
 
-    function init(){
-      initTabs();
-      renderMainElementButtons();
-      renderSubElementButtons();
-      renderSubElementDetail();
-      renderHybrids();
-      renderMutationTables();
-      renderGrowthButtons();
-      renderGrowthDisplay();
-      populateBasicSelects();
-      bindCalculatorEvents();
-      updateFormConstraints();
-      calculateDamage();
-      calculateCoreStats();
-      calculateScaleHelper();
+    function drawArcPath(ctx, points, sourceY, color, sx, sy) {
+      if (points.length < 2) {
+        return;
+      }
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        const x = sx(points[i].horizontal);
+        const y = sy(sourceY + points[i].y);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
     }
 
-    document.addEventListener('DOMContentLoaded', init);
+    function drawPoint(ctx, x, y, color, label) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "#0c1116";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#edf4f6";
+      ctx.font = "13px system-ui, sans-serif";
+      ctx.fillText(label, x + 11, y - 10);
+      ctx.restore();
+    }
+
+    function drawEmptyState(ctx, w, h, text) {
+      ctx.save();
+      ctx.fillStyle = "#9caeba";
+      ctx.font = "20px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(text, w / 2, h / 2);
+      ctx.restore();
+    }
+
+    function copyResult() {
+      if (!latestResult?.solved?.angles?.reachable) return;
+      const { inputs, solved } = latestResult;
+      const yaw = mountYaw(solved.dx, solved.dz);
+      const chosen = selectedArc(solved.angles, inputs.preferredArc);
+      if (!chosen) return;
+
+      const text = [
+        "CBC Ballistics Result",
+        `Yaw: ${format(yaw)} deg clockwise`,
+        `Arc: ${inputs.preferredArc}`,
+        `Mount pitch: ${format(chosen.elevationDeg)} deg`,
+        `Mount range: ${chosen.inMountRange ? "OK" : "OUT OF RANGE"}`,
+        `Flight time: ${format(chosen.time)} s`,
+        `Muzzle: X ${format(solved.source.x, 2)}, Y ${format(solved.source.y, 2)}, Z ${format(solved.source.z, 2)}`,
+        `Distance: ${format(solved.horizontal, 2)} m`,
+        `Gravity: ${format(inputs.gravityTicks, 3)} blocks/tick^2 / ${format(inputs.gravity, 2)} m/s^2`,
+        `Drag: ${format(inputs.drag, 3)}`,
+        `Velocity: ${format(inputs.velocity, 2)} m/s`
+      ].join("\n");
+
+      navigator.clipboard?.writeText(text);
+      setStatus(el.status, "Copied", "ok");
+    }
+
+    function loadSample() {
+      el.mountX.value = "0";
+      el.mountY.value = "64";
+      el.mountZ.value = "0";
+      el.targetX.value = "680";
+      el.targetY.value = "75";
+      el.targetZ.value = "280";
+      el.velocity.value = "900";
+      el.barrelLength.value = "24";
+      el.barrelYOffset.value = "2";
+      el.gravityTicks.value = "0.05";
+      el.gravityMeters.value = "20";
+      el.drag.value = "0.01";
+      el.preferredArc.value = "low";
+      el.useBarrelLength.checked = true;
+      el.quadraticDrag.checked = false;
+      calculate();
+    }
+
+    el.gravityTicks.addEventListener("input", () => {
+      if (syncingGravity) return;
+      syncingGravity = true;
+      const gTicks = Math.max(0, Number(el.gravityTicks.value) || 0);
+      el.gravityMeters.value = format(gTicks * TICKS_PER_SECOND * TICKS_PER_SECOND, 2);
+      syncingGravity = false;
+      calculate();
+    });
+
+    el.gravityMeters.addEventListener("input", () => {
+      if (syncingGravity) return;
+      syncingGravity = true;
+      const gMeters = Math.max(0, Number(el.gravityMeters.value) || 0);
+      el.gravityTicks.value = format(gMeters / (TICKS_PER_SECOND * TICKS_PER_SECOND), 3);
+      syncingGravity = false;
+      calculate();
+    });
+
+    for (const id of ids) {
+      if (id === "gravityTicks" || id === "gravityMeters") continue;
+      el[id].addEventListener("input", calculate);
+      el[id].addEventListener("change", calculate);
+    }
+
+    el.sampleButton.addEventListener("click", loadSample);
+    el.copyButton.addEventListener("click", copyResult);
+    calculate();
   </script>
 </body>
 </html>
